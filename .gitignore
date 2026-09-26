@@ -1,0 +1,4 @@
+node_modules/
+renders/
+.env
+.DS_Store

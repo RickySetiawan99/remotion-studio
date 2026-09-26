@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MotionCraft AI — High-Taste Motion Graphics Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap');
+    body {
+      font-family: 'Figtree', sans-serif;
+      background-color: #040711;
+      color: #f1f5f9;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .font-serif { font-family: 'Playfair Display', serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #0b1120; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen md:h-screen flex flex-col bg-slate-950 text-slate-100 overflow-y-auto md:overflow-hidden">
+
+  <!-- TOP HEADER -->
+  <header class="h-14 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur flex items-center justify-between px-4 sm:px-6 z-30 shrink-0 sticky top-0 md:relative">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-sky-400 flex items-center justify-center font-black text-white text-base shadow-lg shadow-blue-500/20">
+        M
+      </div>
+      <div>
+        <h1 class="font-extrabold text-sm sm:text-base tracking-tight flex items-center gap-2">
+          MotionCraft AI <span class="bg-blue-500/10 text-blue-400 text-[10px] font-mono px-2 py-0.5 rounded border border-blue-500/20 font-semibold">Studio</span>
+        </h1>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button onclick="toggleGallery()" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold flex items-center gap-1.5 border border-slate-700 transition">
+        <i class="fa-solid fa-photo-film text-blue-400"></i> <span>Gallery Video</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN PROMPT STUDIO -->
+  <div class="flex-1 flex flex-col md:flex-row min-h-0 md:overflow-hidden">
+    
+    <!-- LEFT INPUT PANEL -->
+    <aside class="w-full md:w-[420px] border-b md:border-b-0 md:border-r border-slate-800 bg-slate-900/80 p-4 sm:p-5 flex flex-col space-y-4 md:overflow-y-auto custom-scrollbar shrink-0">
+      
+      <!-- PROMPT -->
+      <div>
+        <label class="text-xs font-bold text-slate-200 uppercase tracking-wider block mb-1.5">
+          <i class="fa-solid fa-wand-magic-sparkles text-amber-400 mr-1"></i> Prompt Video Motion Graphics
+        </label>
+        <textarea id="promptInput" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition resize-none leading-relaxed" placeholder="Contoh: Mengapa AI Agen akan menggantikan aplikasi tradisional? Jelaskan dalam 60 detik..."></textarea>
+      </div>
+
+      <!-- PLATFORM FORMAT / ASPECT RATIO GRID -->
+      <div>
+        <label class="text-xs font-bold text-slate-200 uppercase tracking-wider block mb-2">
+          <i class="fa-solid fa-shapes text-sky-400 mr-1"></i> Format Platform Post
+        </label>
+        <div class="grid grid-cols-4 gap-1.5">
+          <div onclick="selectPlatform('9:16')" id="plat-9-16" class="platform-card p-2 rounded-xl border-2 border-blue-500 bg-blue-500/10 cursor-pointer transition text-center">
+            <i class="fa-brands fa-tiktok text-sm mb-1 text-sky-400"></i>
+            <div class="font-bold text-[10px] text-white">9:16</div>
+            <div class="text-[8px] text-slate-400">TikTok/Reels</div>
+          </div>
+          <div onclick="selectPlatform('4:5')" id="plat-4-5" class="platform-card p-2 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition text-center">
+            <i class="fa-brands fa-instagram text-sm mb-1 text-pink-400"></i>
+            <div class="font-bold text-[10px] text-white">4:5</div>
+            <div class="text-[8px] text-slate-400">IG Portrait</div>
+          </div>
+          <div onclick="selectPlatform('1:1')" id="plat-1-1" class="platform-card p-2 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition text-center">
+            <i class="fa-regular fa-square text-sm mb-1 text-emerald-400"></i>
+            <div class="font-bold text-[10px] text-white">1:1</div>
+            <div class="text-[8px] text-slate-400">Square Post</div>
+          </div>
+          <div onclick="selectPlatform('16:9')" id="plat-16-9" class="platform-card p-2 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition text-center">
+            <i class="fa-brands fa-youtube text-sm mb-1 text-red-400"></i>
+            <div class="font-bold text-[10px] text-white">16:9</div>
+            <div class="text-[8px] text-slate-400">YouTube/Web</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESIGN PRESETS -->
+      <div>
+        <label class="text-xs font-bold text-slate-200 uppercase tracking-wider block mb-2">
+          <i class="fa-solid fa-palette text-indigo-400 mr-1"></i> Gaya & Template Desain (6 Presets)
+        </label>
+        <div class="grid grid-cols-2 gap-2">
+          
+          <div onclick="selectPreset('pi-v2-dark')" id="preset-pi-v2-dark" class="preset-card p-2.5 rounded-xl border-2 border-blue-500 bg-blue-500/10 cursor-pointer transition">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-[11px] text-white">🌙 Pro Explainer</span>
+              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+            </div>
+            <p class="text-[9px] text-slate-400">Midnight navy, glass cards, glow badges.</p>
+          </div>
+
+          <div onclick="selectPreset('tech-neon-soft')" id="preset-tech-neon-soft" class="preset-card p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-[11px] text-white">⚡ Cyber Tech</span>
+              <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+            </div>
+            <p class="text-[9px] text-slate-400">Teal dark, IDE window, code monospace.</p>
+          </div>
+
+          <div onclick="selectPreset('hyper-crypto')" id="preset-hyper-crypto" class="preset-card p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-[11px] text-white">💎 Fintech Purple</span>
+              <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+            </div>
+            <p class="text-[9px] text-slate-400">Electric violet, neon gold accents.</p>
+          </div>
+
+          <div onclick="selectPreset('sunset-creator')" id="preset-sunset-creator" class="preset-card p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-[11px] text-white">🔥 Creator Flame</span>
+              <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+            </div>
+            <p class="text-[9px] text-slate-400">Crimson coral, high-energy sunset.</p>
+          </div>
+
+          <div onclick="selectPreset('warm-paper')" id="preset-warm-paper" class="preset-card p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-[11px] text-white">📜 Editorial Paper</span>
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            </div>
+            <p class="text-[9px] text-slate-400">Warm cream, typography serif cards.</p>
+          </div>
+
+          <div onclick="selectPreset('mono-editorial')" id="preset-mono-editorial" class="preset-card p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold text-[11px] text-white">🖤 Minimal Mono</span>
+              <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+            </div>
+            <p class="text-[9px] text-slate-400">Brutalist high-contrast black & white.</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- DURATION PICKER -->
+      <div>
+        <label class="text-xs font-bold text-slate-200 uppercase tracking-wider block mb-1.5">
+          <i class="fa-solid fa-clock text-emerald-400 mr-1"></i> Durasi Video
+        </label>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button onclick="selectDuration(30)" id="dur-30" class="dur-btn py-2 rounded-lg border border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 hover:text-white">30s</button>
+          <button onclick="selectDuration(60)" id="dur-60" class="dur-btn py-2 rounded-lg border-2 border-blue-500 bg-blue-500/10 text-xs font-bold text-blue-400">60s (1m)</button>
+          <button onclick="selectDuration(90)" id="dur-90" class="dur-btn py-2 rounded-lg border border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 hover:text-white">90s</button>
+          <button onclick="selectDuration(120)" id="dur-120" class="dur-btn py-2 rounded-lg border border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 hover:text-white">120s (2m)</button>
+        </div>
+      </div>
+
+      <!-- MAIN ACTION BUTTON -->
+      <button id="generateBtn" onclick="generateAndRenderVideo()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 hover:from-blue-500 hover:to-sky-400 text-sm font-extrabold text-white flex items-center justify-center gap-2 shadow-xl shadow-blue-600/30 transition transform active:scale-[0.99]">
+        <i class="fa-solid fa-bolt text-amber-300"></i> Generate Motion Video (AI)
+      </button>
+
+      <div id="aiStatusLog" class="hidden text-xs p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 flex items-center gap-2.5">
+        <i class="fa-solid fa-circle-notch fa-spin text-blue-400 text-sm"></i>
+        <span id="aiStatusText">AI sedang merancang struktur video & animasi...</span>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT VIDEO PREVIEW & TIMELINE -->
+    <main class="flex-1 flex flex-col bg-slate-950 relative min-w-0 md:overflow-hidden pb-6 md:pb-0">
+      
+      <!-- PREVIEW CANVAS CONTAINER -->
+      <div class="flex-1 flex items-center justify-center p-3 sm:p-6 relative min-h-[380px] sm:min-h-[460px] md:min-h-0">
+        <div id="canvasWrapper" class="relative shadow-2xl shadow-blue-500/10 rounded-2xl overflow-hidden border border-slate-800 bg-black flex items-center justify-center w-full max-w-[320px] sm:max-w-[380px] md:max-w-none md:max-h-[70vh] aspect-[9/16] transition-all duration-300 mx-auto">
+          <canvas id="remotionCanvas" width="1080" height="1920" class="w-full h-full object-contain"></canvas>
+          <div id="videoBadgeOverlay" class="hidden absolute top-3 left-3 bg-black/75 backdrop-blur px-2.5 py-1 rounded-full text-[10px] font-mono text-slate-300 border border-white/10 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="styleBadge">pi-v2-dark</span> | <span id="platBadge">9:16</span> | <span id="durBadge">60s</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMELINE CONTROLS -->
+      <div class="h-28 border-t border-slate-800 bg-slate-900/95 flex flex-col px-4 sm:px-6 py-2.5 z-20 shrink-0 sticky bottom-0 md:relative">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <button id="btnPrev" disabled onclick="stepFrame(-30)" class="w-7 h-7 rounded-lg bg-slate-800/50 text-slate-600 flex items-center justify-center text-xs cursor-not-allowed">
+              <i class="fa-solid fa-backward-step"></i>
+            </button>
+            <button id="playBtn" disabled onclick="togglePlay()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-600 flex items-center justify-center shadow-lg transition cursor-not-allowed">
+              <i id="playIcon" class="fa-solid fa-play ml-0.5 text-xs"></i>
+            </button>
+            <button id="btnNext" disabled onclick="stepFrame(30)" class="w-7 h-7 rounded-lg bg-slate-800/50 text-slate-600 flex items-center justify-center text-xs cursor-not-allowed">
+              <i class="fa-solid fa-forward-step"></i>
+            </button>
+          </div>
+
+          <div class="font-mono text-xs text-slate-400 flex items-center gap-3">
+            <div><span id="currentTimeText" class="text-slate-500 font-bold">0.00s</span> / <span id="totalTimeText">60.00s</span></div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="exportDirectBtn" disabled onclick="renderVideoMP4()" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-500 text-xs font-bold cursor-not-allowed transition">
+              <i class="fa-solid fa-download mr-1"></i> Export MP4
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col justify-center">
+          <div class="relative w-full h-7 bg-slate-950 border border-slate-800 rounded-lg overflow-hidden cursor-pointer" id="timelineBar" onclick="scrubTimeline(event)" ontouchstart="scrubTouch(event)" ontouchmove="scrubTouch(event)">
+            <div id="timelineTracks" class="absolute inset-y-1 left-0 right-0 flex px-1 gap-1 pointer-events-none"></div>
+            <div id="playhead" class="absolute top-0 bottom-0 w-0.5 bg-blue-400 shadow-md shadow-blue-400/80 z-10 pointer-events-none transform -translate-x-1/2" style="left: 0%;">
+              <div class="w-2.5 h-2.5 bg-blue-400 rotate-45 -mt-1 -ml-1"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- GALLERY MODAL -->
+  <div id="galleryModal" onclick="if(event.target===this)toggleGallery()" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-xl shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-base flex items-center gap-2 text-white">
+          <i class="fa-solid fa-photo-film text-blue-400"></i> Gallery Hasil Render Video
+        </h3>
+        <div class="flex items-center gap-2">
+          <button onclick="deleteAllRenders()" class="text-xs px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 font-semibold cursor-pointer">Hapus Semua</button>
+          <button onclick="toggleGallery()" class="text-slate-400 hover:text-white p-1 cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+      </div>
+
+      <div id="galleryList" class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+        <p class="text-xs text-slate-500">Loading renders...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isGenerated = false;
+    let selectedPlatform = '9:16';
+    let selectedStyle = 'pi-v2-dark';
+    let selectedSec = 60;
+    
+    const PLATFORM_CONFIGS = {
+      '9:16': { width: 1080, height: 1920, aspectClass: 'aspect-[9/16]' },
+      '4:5':  { width: 1080, height: 1350, aspectClass: 'aspect-[4/5]' },
+      '1:1':  { width: 1080, height: 1080, aspectClass: 'aspect-[1/1]' },
+      '16:9': { width: 1920, height: 1080, aspectClass: 'aspect-[16/9]' }
+    };
+
+    let videoConfig = { width: 1080, height: 1920, fps: 30, durationInFrames: 1800, durationSec: 60 };
+
+    let composition = {
+      title: "",
+      scenes: []
+    };
+
+    let currentFrame = 0;
+    let isPlaying = false;
+    let animationTimer = null;
+
+    const canvas = document.getElementById('remotionCanvas');
+    const ctx = canvas.getContext('2d');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      drawFrame(0);
+    });
+
+    function selectPlatform(plat) {
+      selectedPlatform = plat;
+      document.querySelectorAll('.platform-card').forEach(c => {
+        c.className = 'platform-card p-2 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition text-center';
+      });
+      const act = document.getElementById(`plat-${plat.replace(':', '-')}`);
+      if (act) act.className = 'platform-card p-2 rounded-xl border-2 border-blue-500 bg-blue-500/10 cursor-pointer transition text-center';
+
+      const cfg = PLATFORM_CONFIGS[plat];
+      videoConfig.width = cfg.width;
+      videoConfig.height = cfg.height;
+      canvas.width = cfg.width;
+      canvas.height = cfg.height;
+
+      const wrapper = document.getElementById('canvasWrapper');
+      wrapper.className = `relative shadow-2xl shadow-blue-500/10 rounded-2xl overflow-hidden border border-slate-800 bg-black flex items-center justify-center w-full max-w-[320px] sm:max-w-[380px] md:max-w-none md:max-h-[70vh] ${cfg.aspectClass} transition-all duration-300 mx-auto`;
+
+      document.getElementById('platBadge').innerText = plat;
+      drawFrame(currentFrame);
+    }
+
+    function selectPreset(st) {
+      selectedStyle = st;
+      document.querySelectorAll('.preset-card').forEach(c => {
+        c.className = 'preset-card p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-slate-700 cursor-pointer transition';
+      });
+      const act = document.getElementById(`preset-${st}`);
+      if (act) act.className = 'preset-card p-2.5 rounded-xl border-2 border-blue-500 bg-blue-500/10 cursor-pointer transition';
+      document.getElementById('styleBadge').innerText = st;
+      if (isGenerated) drawFrame(currentFrame);
+    }
+
+    function selectDuration(sec) {
+      selectedSec = sec;
+      document.querySelectorAll('.dur-btn').forEach(b => {
+        b.className = 'dur-btn py-2 rounded-lg border border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 hover:text-white';
+      });
+      const act = document.getElementById(`dur-${sec}`);
+      if (act) act.className = 'dur-btn py-2 rounded-lg border-2 border-blue-500 bg-blue-500/10 text-xs font-bold text-blue-400';
+      
+      videoConfig.durationSec = sec;
+      videoConfig.durationInFrames = sec * videoConfig.fps;
+      document.getElementById('totalTimeText').innerText = sec.toFixed(2) + 's';
+      document.getElementById('durBadge').innerText = `${sec}s`;
+
+      if (isGenerated && composition.scenes.length) {
+        const sceneDur = Math.floor(videoConfig.durationInFrames / composition.scenes.length);
+        composition.scenes.forEach((s, i) => {
+          s.startFrame = i * sceneDur;
+          s.endFrame = (i === composition.scenes.length - 1) ? videoConfig.durationInFrames : (i + 1) * sceneDur;
+        });
+        renderTimelineTracks();
+        drawFrame(currentFrame);
+      }
+    }
+
+    function enableControls() {
+      ['btnPrev', 'playBtn', 'btnNext', 'exportDirectBtn'].forEach(id => {
+        const el = document.getElementById(id);
+        el.disabled = false;
+        el.classList.remove('cursor-not-allowed', 'bg-slate-800/50', 'text-slate-600', 'text-slate-500');
+      });
+      document.getElementById('playBtn').className = 'w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-600/30 transition';
+      document.getElementById('btnPrev').className = 'w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs';
+      document.getElementById('btnNext').className = 'w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-xs';
+      document.getElementById('exportDirectBtn').className = 'px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white shadow-md shadow-indigo-600/30 transition';
+      document.getElementById('currentTimeText').className = 'text-emerald-400 font-bold';
+      document.getElementById('videoBadgeOverlay').classList.remove('hidden');
+    }
+
+    function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, align = 'center') {
+      const words = (text || '').split(' ');
+      let line = '';
+      const lines = [];
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          lines.push(line.trim());
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line.trim());
+
+      let curY = y;
+      const oldAlign = ctx.textAlign;
+      ctx.textAlign = align;
+      for (const l of lines) {
+        ctx.fillText(l, x, curY);
+        curY += lineHeight;
+      }
+      ctx.textAlign = oldAlign;
+    }
+
+    const STYLE_PRESETS = {
+      'pi-v2-dark': {
+        bg: ['#1e1b4b', '#0f172a', '#030712'],
+        cardBg: 'rgba(15, 23, 42, 0.94)',
+        cardBorder: 'rgba(99, 102, 241, 0.45)',
+        text: '#ffffff',
+        sub: '#94a3b8',
+        accent: '#6366f1',
+        accentGlow: 'rgba(99, 102, 241, 0.28)',
+        accent2: '#38bdf8'
+      },
+      'tech-neon-soft': {
+        bg: ['#042f2e', '#022c22', '#020617'],
+        cardBg: 'rgba(4, 47, 46, 0.92)',
+        cardBorder: 'rgba(45, 212, 191, 0.45)',
+        text: '#2dd4bf',
+        sub: '#99f6e4',
+        accent: '#14b8a6',
+        accentGlow: 'rgba(20, 184, 166, 0.28)',
+        accent2: '#10b981'
+      },
+      'hyper-crypto': {
+        bg: ['#3b0764', '#1e1b4b', '#030712'],
+        cardBg: 'rgba(24, 9, 43, 0.94)',
+        cardBorder: 'rgba(168, 85, 247, 0.45)',
+        text: '#ffffff',
+        sub: '#d8b4fe',
+        accent: '#a855f7',
+        accentGlow: 'rgba(168, 85, 247, 0.3)',
+        accent2: '#eab308'
+      },
+      'sunset-creator': {
+        bg: ['#450a0a', '#1c1917', '#09090b'],
+        cardBg: 'rgba(28, 25, 23, 0.94)',
+        cardBorder: 'rgba(249, 115, 22, 0.45)',
+        text: '#ffffff',
+        sub: '#fdba74',
+        accent: '#f97316',
+        accentGlow: 'rgba(249, 115, 22, 0.3)',
+        accent2: '#ef4444'
+      },
+      'warm-paper': {
+        bg: ['#fffbeb', '#fef3c7', '#fde68a'],
+        cardBg: 'rgba(255, 255, 255, 0.96)',
+        cardBorder: 'rgba(217, 119, 6, 0.35)',
+        text: '#451a03',
+        sub: '#78350f',
+        accent: '#d97706',
+        accentGlow: 'rgba(217, 119, 6, 0.22)',
+        accent2: '#b45309'
+      },
+      'mono-editorial': {
+        bg: ['#18181b', '#09090b', '#000000'],
+        cardBg: 'rgba(24, 24, 27, 0.95)',
+        cardBorder: 'rgba(255, 255, 255, 0.25)',
+        text: '#f4f4f5',
+        sub: '#a1a1aa',
+        accent: '#e4e4e7',
+        accentGlow: 'rgba(255, 255, 255, 0.15)',
+        accent2: '#ffffff'
+      }
+    };
+
+    function interpolate(frame, inRange, outRange) {
+      const [inMin, inMax] = inRange;
+      const [outMin, outMax] = outRange;
+      if (frame <= inMin) return outMin;
+      if (frame >= inMax) return outMax;
+      return outMin + ((frame - inMin) / (inMax - inMin)) * (outMax - outMin);
+    }
+
+    function drawKineticHeadline(ctx, headline, x, y, maxWidth, sceneFrame, accentColor, fontSize = 48) {
+      const words = (headline || '').split(' ');
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const spaceW = ctx.measureText(' ').width;
+      const wordMetrics = words.map(w => ({
+        text: w.replace(/\*/g, ''),
+        width: ctx.measureText(w.replace(/\*/g, '')).width,
+        isAccent: w.startsWith('*') || w.endsWith('*') || w.includes('*')
+      }));
+      const totalW = wordMetrics.reduce((sum, w) => sum + w.width, 0) + (words.length - 1) * spaceW;
+
+      if (totalW < maxWidth) {
+        let curX = x - totalW / 2;
+        words.forEach((w, i) => {
+          const wordDelay = i * 3;
+          const wordProgress = Math.max(0, Math.min(1, (sceneFrame - wordDelay) / 7));
+          const wordY = y + (1 - wordProgress) * 18;
+          const cleanW = w.replace(/\*/g, '');
+          const isAcc = w.includes('*') || i === words.length - 1;
+
+          ctx.save();
+          ctx.globalAlpha = wordProgress;
+          ctx.fillStyle = isAcc ? accentColor : '#ffffff';
+          ctx.textAlign = 'left';
+          ctx.fillText(cleanW, curX, wordY);
+          ctx.restore();
+
+          curX += ctx.measureText(cleanW).width + spaceW;
+        });
+      } else {
+        drawWrappedText(ctx, headline.replace(/\*/g, ''), x, y, maxWidth, fontSize + 12, 'center');
+      }
+    }
+
+    function drawFrame(frame) {
+      const width = canvas.width;
+      const height = canvas.height;
+
+      // EMPTY INITIAL STATE
+      if (!isGenerated || !composition.scenes.length) {
+        ctx.fillStyle = '#080c14';
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+        ctx.lineWidth = 1;
+        for (let x = 0; x < width; x += 60) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+        }
+        for (let y = 0; y < height; y += 60) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+        }
+
+        const boxW = Math.min(width * 0.85, 860);
+        const boxH = Math.min(height * 0.6, 480);
+        const boxX = (width - boxW) / 2;
+        const boxY = (height - boxH) / 2;
+
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(boxX, boxY, boxW, boxH, 32);
+        ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = '#6366f1';
+        ctx.beginPath();
+        ctx.arc(width / 2, boxY + boxH * 0.28, 44, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 36px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✨', width / 2, boxY + boxH * 0.28);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 36px sans-serif';
+        ctx.fillText('MotionCraft AI Studio', width / 2, boxY + boxH * 0.55);
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '500 22px sans-serif';
+        ctx.fillText('Pilih platform & masukkan prompt untuk generate video', width / 2, boxY + boxH * 0.72);
+        return;
+      }
+
+      // RENDER REAL GENERATED VIDEO
+      const st = STYLE_PRESETS[selectedStyle] || STYLE_PRESETS['pi-v2-dark'];
+      ctx.save();
+
+      // Camera Drift
+      const camZoom = 1.0 + Math.sin(frame * 0.02) * 0.016;
+      const camPanX = Math.cos(frame * 0.015) * 8;
+      const camPanY = Math.sin(frame * 0.015) * 8;
+
+      ctx.translate(width / 2 + camPanX, height / 2 + camPanY);
+      ctx.scale(camZoom, camZoom);
+      ctx.translate(-width / 2, -height / 2);
+
+      // Deep Atmosphere Background with Spotlight Glow
+      const spotX = width * 0.5 + Math.cos(frame * 0.03) * 150;
+      const spotY = height * 0.35 + Math.sin(frame * 0.03) * 150;
+      const grad = ctx.createRadialGradient(spotX, spotY, 50, width/2, height/2, width * 0.9);
+      grad.addColorStop(0, st.bg[0]);
+      grad.addColorStop(0.6, st.bg[1]);
+      grad.addColorStop(1, st.bg[2]);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      // Particle Stars
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      for (let p = 0; p < 25; p++) {
+        const px = ((p * 137.5 + frame * 0.4 * (1 + (p % 3))) % width);
+        const py = ((p * 229.3 + frame * 0.6 * (1 + (p % 2))) % height);
+        const pSize = 1.5 + (p % 3);
+        ctx.beginPath(); ctx.arc(px, py, pSize, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // 3D Geometric Shards
+      const shardRot = frame * 0.02;
+      ctx.save();
+      ctx.strokeStyle = st.accentGlow;
+      ctx.lineWidth = 2;
+      ctx.translate(width * 0.85, height * 0.12);
+      ctx.rotate(shardRot);
+      ctx.strokeRect(-45, -45, 90, 90);
+      ctx.beginPath(); ctx.arc(0, 0, 55, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+
+      // Top Progress Capsule
+      const totalProgress = Math.min(1, frame / videoConfig.durationInFrames);
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.beginPath();
+      ctx.roundRect(45, 45, width - 90, 8, 4);
+      ctx.fill();
+
+      ctx.fillStyle = st.accent;
+      ctx.beginPath();
+      ctx.roundRect(45, 45, (width - 90) * totalProgress, 8, 4);
+      ctx.fill();
+
+      // Bottom Audio Equalizer Waveform
+      const numBars = 28;
+      const barW = (width - 120) / numBars;
+      for (let b = 0; b < numBars; b++) {
+        const barH = 12 + Math.abs(Math.sin(frame * 0.12 + b * 0.35) * Math.cos(frame * 0.06 + b * 0.2)) * 36;
+        const bx = 60 + b * barW;
+        const by = height - 60 - barH;
+        ctx.fillStyle = b % 2 === 0 ? st.accent : st.accent2 || '#38bdf8';
+        ctx.globalAlpha = 0.45;
+        ctx.beginPath();
+        ctx.roundRect(bx + 2, by, barW - 4, barH, 4);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      }
+
+      const activeScene = composition.scenes.find(s => frame >= s.startFrame && frame < s.endFrame) || composition.scenes[composition.scenes.length - 1];
+
+      if (activeScene) {
+        const sceneFrame = frame - activeScene.startFrame;
+        const sceneDur = activeScene.endFrame - activeScene.startFrame;
+
+        let translateY = 0;
+        let opacity = 1;
+        let rotation = 0;
+
+        if (sceneFrame < 24) {
+          translateY = interpolate(sceneFrame, [0, 22], [90, 0]);
+          rotation = interpolate(sceneFrame, [0, 22], [-0.02, 0]);
+        } else if (sceneFrame > sceneDur - 15) {
+          const exitF = sceneFrame - (sceneDur - 15);
+          translateY = interpolate(exitF, [0, 15], [0, -70]);
+          opacity = interpolate(exitF, [0, 15], [1, 0]);
+        } else {
+          translateY = Math.sin(sceneFrame * 0.035) * 4;
+        }
+
+        // Emil Kowalski Spring Physics Transition
+        let translateY = 0;
+        let opacity = 1;
+        let scale = 1;
+
+        if (sceneFrame < 22) {
+          translateY = interpolate(sceneFrame, [0, 20], [80, 0]);
+          opacity = interpolate(sceneFrame, [0, 15], [0, 1]);
+          scale = interpolate(sceneFrame, [0, 20], [0.94, 1]);
+        } else if (sceneFrame > sceneDur - 15) {
+          const exitF = sceneFrame - (sceneDur - 15);
+          translateY = interpolate(exitF, [0, 15], [0, -80]);
+          opacity = interpolate(exitF, [0, 15], [1, 0]);
+        } else {
+          translateY = Math.sin(sceneFrame * 0.035) * 4;
+        }
+
+        ctx.save();
+        ctx.translate(width / 2, height / 2 + translateY);
+        ctx.scale(scale, scale);
+        ctx.translate(-width / 2, -(height / 2 + translateY));
+        ctx.globalAlpha = opacity;
+
+        const pts = (activeScene.points && activeScene.points.length > 0) ? activeScene.points : [
+          "Optimasi proses otomatis",
+          "Eksekusi instan berkecepatan tinggi",
+          "Akurasi presisi data real-time"
+        ];
+
+        // --- FULL-FRAME DIVERSE SCENE GEOMETRIES (NO MANDATORY CARD BOX!) ---
+
+        if (activeScene.type === 'hero_typography' || activeScene.type === 'hook') {
+          // 1. Full-Screen Cinematic Typography (Pure text power, zero bounding boxes)
+          const tagY = height * 0.28;
+          ctx.fillStyle = st.accent;
+          ctx.beginPath();
+          ctx.roundRect(width / 2 - 110, tagY, 220, 48, 24);
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 18px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(activeScene.tag || "01 / FOCUS", width / 2, tagY + 24);
+
+          // Giant Hero Typography (84px font)
+          drawKineticHeadline(ctx, activeScene.headline, width / 2, height * 0.44, width - 120, sceneFrame, st.accent, 84, st.font);
+
+          // Hero Subtext (Light Glow Background Line)
+          ctx.fillStyle = st.sub;
+          ctx.font = `600 ${Math.round(width * 0.032)}px ${st.font}`;
+          ctx.textAlign = 'center';
+          drawWrappedText(ctx, activeScene.subtext || '', width / 2, height * 0.58, width - 180, 42, 'center');
+
+          // Pulsing Floating Aura Rings around text
+          ctx.strokeStyle = st.accentGlow;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(width / 2, height * 0.44, 280 + Math.sin(sceneFrame * 0.1) * 15, 0, Math.PI * 2);
+          ctx.stroke();
+
+        } else if (activeScene.type === 'stat_focus' || activeScene.type === 'stat_callout') {
+          // 2. Full-Bleed Centered Hero Stat Numeral
+          const countProgress = Math.min(1, sceneFrame / 26);
+          const currentVal = Math.floor(countProgress * (activeScene.metricValue || 99));
+
+          // Shockwave Rings
+          for (let r = 1; r <= 3; r++) {
+            ctx.strokeStyle = st.accentGlow;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(width / 2, height * 0.44, 110 * r + (sceneFrame * 2) % 60, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+          // Giant Hero Number
+          ctx.fillStyle = st.accent;
+          ctx.font = `bold 160px monospace`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${currentVal}%`, width / 2, height * 0.44);
+
+          // Label Pill
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+          ctx.beginPath();
+          ctx.roundRect(width / 2 - 200, height * 0.57, 400, 52, 26);
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 24px sans-serif';
+          ctx.fillText(activeScene.metricLabel || 'Tingkat Pertumbuhan', width / 2, height * 0.57 + 26);
+
+          // Sub headline
+          ctx.fillStyle = st.sub;
+          ctx.font = '600 22px sans-serif';
+          ctx.fillText(activeScene.headline.replace(/\\*/g, ''), width / 2, height * 0.68);
+
+        } else if (activeScene.type === 'cinematic_quote' || activeScene.type === 'giant_quote') {
+          // 3. Cinematic Full-Bleed Editorial Quote
+          ctx.fillStyle = st.accentGlow;
+          ctx.font = 'bold 320px serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('“', width / 2, height * 0.38);
+
+          // Quote Text
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'italic 600 38px serif';
+          const quoteBody = activeScene.quoteText || activeScene.subtext || pts[0];
+          drawWrappedText(ctx, `"${quoteBody}"`, width / 2, height * 0.46, width - 180, 56, 'center');
+
+          // Floating Author Pill
+          ctx.fillStyle = st.accent;
+          ctx.beginPath();
+          ctx.roundRect(width / 2 - 160, height * 0.68, 320, 50, 25);
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 20px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`— ${activeScene.quoteAuthor || 'Refleksi Kunci'}`, width / 2, height * 0.68 + 25);
+
+        } else if (activeScene.type === 'split_screen' || activeScene.type === 'comparison_split') {
+          // 4. Full-Screen Dual Split (Top / Bottom or Left / Right)
+          const splitY = height * 0.25;
+          const halfH = height * 0.32;
+          const halfW = width - 120;
+
+          // Top Half (Traditional / Red)
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.12)';
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(60, splitY, halfW, halfH, 24);
+          ctx.fill(); ctx.stroke();
+
+          ctx.fillStyle = '#ef4444';
+          ctx.font = 'bold 26px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('❌ CARA LAMA / MITOS', width / 2, splitY + 50);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '600 24px sans-serif';
+          drawWrappedText(ctx, pts[0] || "Proses manual yang lambat & rentan eror", width / 2, splitY + 110, halfW - 60, 36, 'center');
+
+          // Bottom Half (Modern / Green)
+          const botY = splitY + halfH + 30;
+          ctx.fillStyle = 'rgba(34, 197, 94, 0.15)';
+          ctx.strokeStyle = '#22c55e';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(60, botY, halfW, halfH, 24);
+          ctx.fill(); ctx.stroke();
+
+          ctx.fillStyle = '#22c55e';
+          ctx.font = 'bold 26px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('✅ CARA BARU / FAKTA', width / 2, botY + 50);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '600 24px sans-serif';
+          drawWrappedText(ctx, pts[1] || "Automasi instan presisi tinggi berbasis AI", width / 2, botY + 110, halfW - 60, 36, 'center');
+
+        } else if (activeScene.type === 'timeline_flow' || activeScene.type === 'step_flow') {
+          // 5. Full-Height Vertical Connecting Pipeline
+          const steps = pts.length >= 3 ? pts.slice(0, 3) : [...pts, "Hasil Optimal"].slice(0, 3);
+          const startY = height * 0.28;
+          const gapY = 170;
+
+          // Vertical Laser Beam
+          const beamProgress = Math.min(1, sceneFrame / 24);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(140, startY);
+          ctx.lineTo(140, startY + (steps.length - 1) * gapY);
+          ctx.stroke();
+
+          ctx.strokeStyle = st.accent;
+          ctx.lineWidth = 6;
+          ctx.beginPath();
+          ctx.moveTo(140, startY);
+          ctx.lineTo(140, startY + ((steps.length - 1) * gapY) * beamProgress);
+          ctx.stroke();
+
+          steps.forEach((stText, idx) => {
+            const stepY = startY + idx * gapY;
+            const isAct = sceneFrame > idx * 8;
+
+            ctx.fillStyle = isAct ? st.accent : '#334155';
+            ctx.beginPath();
+            ctx.arc(140, stepY, 32, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 22px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`0${idx+1}`, 140, stepY);
+
+            // Text capsule
+            ctx.fillStyle = isAct ? 'rgba(30, 41, 59, 0.95)' : 'rgba(15, 23, 42, 0.7)';
+            ctx.strokeStyle = isAct ? st.accent : 'rgba(255,255,255,0.12)';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.roundRect(200, stepY - 45, width - 260, 90, 20);
+            ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 22px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(stText, 230, stepY);
+          });
+
+        } else if (activeScene.type === 'terminal_ide') {
+          // 6. Floating macOS IDE Terminal Window
+          const termX = 60;
+          const termY = height * 0.26;
+          const termW = width - 120;
+          const termH = height * 0.48;
+
+          ctx.fillStyle = '#090d16';
+          ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.roundRect(termX, termY, termW, termH, 24);
+          ctx.fill(); ctx.stroke();
+
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.roundRect(termX, termY, termW, 50, [24, 24, 0, 0]);
+          ctx.fill();
+
+          ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(termX + 30, termY + 25, 7, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#eab308'; ctx.beginPath(); ctx.arc(termX + 54, termY + 25, 7, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(termX + 78, termY + 25, 7, 0, Math.PI * 2); ctx.fill();
+
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 15px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('engine.terminal.sh', termX + termW / 2, termY + 25);
+
+          const codeSnippet = activeScene.codeSnippet || `// Auto-Execute AI Pipeline\\nconst result = await agent.runWorkflow();\\nconsole.log("Status: 100% Verified");`;
+          const codeLines = codeSnippet.split('\\n');
+          
+          codeLines.forEach((cl, idx) => {
+            const lineY = termY + 95 + idx * 44;
+            ctx.fillStyle = '#475569';
+            ctx.font = '18px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText(`0${idx+1}`, termX + 30, lineY);
+
+            ctx.fillStyle = idx === 0 ? '#38bdf8' : (idx === 1 ? '#a855f7' : '#22c55e');
+            ctx.fillText(cl, termX + 75, lineY);
+          });
+
+        } else {
+          // 7. Staggered Kinetic Floating Capsules
+          const startY = height * 0.28;
+          pts.slice(0, 4).forEach((pt, idx) => {
+            const rowY = startY + idx * 115;
+            const slideProgress = Math.min(1, Math.max(0, (sceneFrame - idx * 6) / 10));
+            const rowX = 60 + (1 - slideProgress) * 60;
+
+            ctx.save();
+            ctx.globalAlpha = slideProgress;
+            ctx.fillStyle = 'rgba(30, 41, 59, 0.85)';
+            ctx.strokeStyle = st.accent;
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.roundRect(rowX, rowY, width - 120, 85, 20);
+            ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = st.accent;
+            ctx.beginPath();
+            ctx.arc(rowX + 50, rowY + 42, 22, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('✓', rowX + 50, rowY + 42);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 22px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(pt, rowX + 95, rowY + 42);
+            ctx.restore();
+          });
+        }
+
+        ctx.restore();
+      }
+
+      ctx.restore();
+
+      document.getElementById('currentTimeText').innerText = (frame / videoConfig.fps).toFixed(2) + 's';
+      document.getElementById('playhead').style.left = `${(frame / videoConfig.durationInFrames) * 100}%`;
+    }
+
+    function togglePlay() {
+      if (!isGenerated) return;
+      isPlaying = !isPlaying;
+      document.getElementById('playIcon').className = isPlaying ? 'fa-solid fa-pause text-xs' : 'fa-solid fa-play ml-0.5 text-xs';
+      if (isPlaying) runAnimation();
+      else cancelAnimationFrame(animationTimer);
+    }
+
+    function runAnimation() {
+      if (!isPlaying) return;
+      currentFrame++;
+      if (currentFrame >= videoConfig.durationInFrames) currentFrame = 0;
+      drawFrame(currentFrame);
+      animationTimer = requestAnimationFrame(runAnimation);
+    }
+
+    function stepFrame(d) {
+      if (!isGenerated) return;
+      if (isPlaying) togglePlay();
+      currentFrame = Math.max(0, Math.min(videoConfig.durationInFrames - 1, currentFrame + d));
+      drawFrame(currentFrame);
+    }
+
+    function scrubTimeline(e) {
+      if (!isGenerated) return;
+      const bar = document.getElementById('timelineBar');
+      const ratio = Math.max(0, Math.min(1, (e.clientX - bar.getBoundingClientRect().left) / bar.getBoundingClientRect().width));
+      currentFrame = Math.floor(ratio * videoConfig.durationInFrames);
+      drawFrame(currentFrame);
+    }
+
+    function scrubTouch(e) {
+      if (!isGenerated) return;
+      const touch = e.touches[0];
+      const bar = document.getElementById('timelineBar');
+      const ratio = Math.max(0, Math.min(1, (touch.clientX - bar.getBoundingClientRect().left) / bar.getBoundingClientRect().width));
+      currentFrame = Math.floor(ratio * videoConfig.durationInFrames);
+      drawFrame(currentFrame);
+    }
+
+    function renderTimelineTracks() {
+      const totalF = videoConfig.durationInFrames;
+      document.getElementById('timelineTracks').innerHTML = composition.scenes.map((s, i) => `
+        <div class="h-full rounded-md bg-blue-600/40 border border-blue-500/60 flex items-center px-1.5 text-[9px] font-mono text-slate-200 truncate" style="width:${((s.endFrame-s.startFrame)/totalF)*100}%;">
+          ${s.tag || 'S'+(i+1)}
+        </div>
+      `).join('');
+    }
+
+    async function generateAndRenderVideo() {
+      const prompt = document.getElementById('promptInput').value;
+      if (!prompt) return alert('Masukkan prompt video terlebih dahulu');
+
+      const btn = document.getElementById('generateBtn');
+      const statusLog = document.getElementById('aiStatusLog');
+      const statusText = document.getElementById('aiStatusText');
+
+      btn.disabled = true;
+      statusLog.classList.remove('hidden');
+      statusText.innerText = 'AI sedang merancang skrip & animasi...';
+
+      try {
+        const res = await fetch('/api/generate-script', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic: prompt, duration: selectedSec, style: selectedStyle, platform: selectedPlatform })
+        });
+        const data = await res.json();
+        if (data.success && data.composition.scenes) {
+          composition.scenes = data.composition.scenes;
+          isGenerated = true;
+          enableControls();
+          selectDuration(selectedSec);
+          currentFrame = 0; drawFrame(0);
+          
+          statusText.innerText = 'FFmpeg rendering MP4 (+faststart)...';
+          await renderVideoMP4();
+        } else {
+          alert('AI Error: ' + (data.error || 'Gagal merancang skrip'));
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        statusLog.classList.add('hidden');
+      }
+    }
+
+    async function renderVideoMP4() {
+      if (!isGenerated) return;
+      try {
+        const res = await fetch('/api/render-edu-video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            composition: {
+              ...composition,
+              durationSec: videoConfig.durationSec,
+              fps: videoConfig.fps,
+              width: videoConfig.width,
+              height: videoConfig.height
+            },
+            style: selectedStyle
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toggleGallery();
+          fetchRenders();
+        } else {
+          alert('Render Error: ' + data.error);
+        }
+      } catch (e) {
+        alert('Exception: ' + e.message);
+      }
+    }
+
+    function toggleGallery() {
+      const g = document.getElementById('galleryModal');
+      g.classList.toggle('hidden');
+      if (!g.classList.contains('hidden')) fetchRenders();
+    }
+
+    async function fetchRenders() {
+      const container = document.getElementById('galleryList');
+      try {
+        const res = await fetch('/api/renders');
+        const data = await res.json();
+        if (!data.files || data.files.length === 0) {
+          container.innerHTML = `<div class="p-6 text-center text-slate-500 text-xs">Belum ada video yang dirender.</div>`;
+          return;
+        }
+        container.innerHTML = data.files.map(f => `
+          <div class="p-3.5 rounded-xl border border-slate-800 bg-slate-950/90 space-y-3 text-xs shadow-lg hover:border-slate-700 transition">
+            <div class="flex justify-between items-center font-mono text-[11px] text-slate-300">
+              <span class="truncate font-semibold max-w-[220px]" title="${f.filename}">${f.filename}</span>
+              <div class="flex items-center gap-2">
+                <span class="text-blue-400 font-bold">${f.sizeMB} MB</span>
+                <button onclick="deleteRenderItem('${f.filename}')" title="Hapus Video" class="text-red-400 hover:text-red-300 p-1 cursor-pointer">
+                  <i class="fa-solid fa-trash text-xs"></i>
+                </button>
+              </div>
+            </div>
+            <video src="${f.url}" controls preload="metadata" class="w-full rounded-lg bg-black object-contain max-h-56 shadow-inner"></video>
+            <div class="flex gap-2">
+              <a href="${f.url}" download class="flex-1 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold text-center transition cursor-pointer flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-download"></i> Download MP4
+              </a>
+              <button onclick="copyVideoLink('${f.url}')" class="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5">
+                <i class="fa-solid fa-link"></i> Salin Link
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = `<p class="text-xs text-red-400">Gagal memuat galeri: ${e.message}</p>`;
+      }
+    }
+
+    async function deleteRenderItem(filename) {
+      if (!confirm(`Hapus video ${filename}?`)) return;
+      try {
+        const res = await fetch(`/api/renders/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) fetchRenders();
+      } catch (e) { alert('Gagal menghapus: ' + e.message); }
+    }
+
+    function copyVideoLink(url) {
+      const fullUrl = window.location.origin + url;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(fullUrl).then(() => alert('Link video disalin: ' + fullUrl));
+      } else {
+        prompt('Salin link video:', fullUrl);
+      }
+    }
+
+    async function deleteAllRenders() {
+      if (!confirm('Yakin ingin menghapus SEMUA hasil render video di server?')) return;
+      try {
+        const res = await fetch('/api/renders', { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) fetchRenders();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+  </script>
+</body>
+</html>
