@@ -1,0 +1,118 @@
+    <!-- RIGHT VIDEO PREVIEW & TIMELINE -->
+    <main id="studioPreviewMain" class="flex-1 hidden md:!flex flex-col bg-[#090a0e] relative min-w-0 md:overflow-hidden pb-3 md:pb-0">
+
+      <!-- PREVIEW CANVAS MONITOR VIEWPORT -->
+      <div class="flex-1 flex flex-col items-center justify-center p-2.5 sm:p-6 relative min-h-[300px] sm:min-h-[460px] md:min-h-0">
+        
+        <!-- Mobile Switcher Hint / Quick Back -->
+        <div class="md:hidden w-full max-w-[320px] flex items-center justify-between mb-2 px-1">
+          <button type="button" onclick="setMobileStudioTab('editor')" class="h-6 px-2.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 text-[10px] font-medium flex items-center gap-1.5 active:scale-95 transition cursor-pointer">
+            <i class="fa-solid fa-arrow-left text-[9px] text-zinc-400"></i>
+            <span>Kembali ke Editor</span>
+          </button>
+          <span class="text-[10px] font-mono text-zinc-500">Live 60 FPS Canvas</span>
+        </div>
+
+        <!-- MONITOR FRAME CONTAINER -->
+        <div id="canvasWrapper" onclick="togglePlay()" title="Klik untuk Play / Pause (Spasi)" class="group relative shadow-2xl rounded-xl overflow-hidden border border-zinc-800 bg-black flex items-center justify-center w-full max-w-[270px] xs:max-w-[320px] sm:max-w-[380px] md:max-w-none max-h-[50vh] sm:max-h-[60vh] md:max-h-[72vh] aspect-[9/16] transition-all duration-200 mx-auto cursor-pointer">
+          <canvas id="remotionCanvas" width="1080" height="1920" class="w-full h-full object-contain pointer-events-none"></canvas>
+          
+          <!-- Canvas Play/Pause Overlay on Hover -->
+          <div id="canvasPlayOverlay" class="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-150 pointer-events-none">
+            <div class="w-12 h-12 rounded-full bg-zinc-900/90 border border-zinc-700 flex items-center justify-center text-white shadow-xl transform group-hover:scale-105 transition-transform">
+              <i id="canvasPlayOverlayIcon" class="fa-solid fa-play ml-0.5 text-sm text-zinc-200"></i>
+            </div>
+          </div>
+
+          <!-- Video HUD Overlay (Top-Left) -->
+          <div id="videoBadgeOverlay" class="absolute top-3 left-3 bg-zinc-900/90 backdrop-blur-sm h-6 px-2.5 rounded-md text-[10px] font-mono text-zinc-400 border border-zinc-800 flex items-center gap-2 pointer-events-none shadow-md">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span id="styleBadge" class="text-zinc-200 font-medium">pi-v2-dark</span>
+            <span class="text-zinc-600">/</span>
+            <span id="platBadge" class="text-zinc-200 font-medium">9:16</span>
+            <span class="text-zinc-600">/</span>
+            <span id="durBadge" class="text-zinc-200 font-medium">60s</span>
+          </div>
+
+          <!-- Resolution HUD (Top-Right) -->
+          <div class="absolute top-3 right-3 bg-zinc-900/80 backdrop-blur-sm h-6 px-2.5 rounded text-[9px] font-mono text-zinc-400 border border-zinc-800 pointer-events-none hidden sm:flex items-center">
+            <span id="hudFpsText">30 FPS</span><span class="mx-1">•</span><span id="hudResText">1080×1920</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TIMELINE CONTROLS & DOCK -->
+      <div class="h-26 sm:h-28 border-t border-zinc-800/80 bg-[#0d0f14] flex flex-col px-3 sm:px-6 py-2 sm:py-3 z-20 shrink-0 sticky bottom-0 md:relative">
+        
+        <!-- PLAYBACK TOOLBAR -->
+        <div class="flex items-center justify-between mb-1.5 sm:mb-2 gap-1">
+          
+          <!-- Left: Playback buttons -->
+          <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            <button id="btnPrev" onclick="stepFrame(-30)" title="Mundur 1 detik (Panah Kiri)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-zinc-800/70 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/60 flex items-center justify-center text-xs transition cursor-pointer">
+              <i class="fa-solid fa-backward-step text-[10px] sm:text-[11px]"></i>
+            </button>
+            <button id="playBtn" onclick="togglePlay()" title="Play / Pause (Spasi)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white hover:bg-zinc-200 text-zinc-950 flex items-center justify-center shadow-xs transition cursor-pointer">
+              <i id="playIcon" class="fa-solid fa-play ml-0.5 text-[10px] sm:text-[11px] text-zinc-950"></i>
+            </button>
+            <button id="btnNext" onclick="stepFrame(30)" title="Maju 1 detik (Panah Kanan)" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-zinc-800/70 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/60 flex items-center justify-center text-xs transition cursor-pointer">
+              <i class="fa-solid fa-forward-step text-[10px] sm:text-[11px]"></i>
+            </button>
+            <button id="btnTimelineAudio" onclick="togglePlayerAudio()" title="Mute / Unmute Audio DSP & SFX Sinkron" class="h-7 sm:h-8 px-2 sm:px-2.5 rounded-md bg-zinc-800/70 hover:bg-zinc-800 text-emerald-400 hover:text-emerald-300 border border-zinc-700/60 flex items-center gap-1.5 text-xs transition cursor-pointer">
+              <i id="timelineAudioIcon" class="fa-solid fa-volume-high text-[10px] sm:text-[11px]"></i>
+              <span id="timelineAudioText" class="text-[11px] font-mono hidden sm:inline">Audio ON</span>
+            </button>
+            <span class="text-[10px] text-zinc-500 hidden lg:inline font-mono ml-1">[Spasi] Play</span>
+          </div>
+
+          <!-- Center: Precision Timecode & Frame Counter -->
+          <div class="font-mono text-xs text-zinc-400 flex items-center gap-1 sm:gap-2 shrink-0">
+            <div class="flex items-center gap-1 sm:gap-1.5 bg-zinc-950 h-7 sm:h-8 px-2 sm:px-3 rounded-md border border-zinc-800 text-[11px] sm:text-xs">
+              <span id="currentTimeText" class="text-zinc-100 font-bold">0.00s</span>
+              <span class="text-zinc-600 font-bold">/</span>
+              <span id="totalTimeText" class="text-zinc-400 font-semibold">12.00s</span>
+              <span id="frameCounterText" class="text-[10px] text-zinc-500 hidden sm:inline ml-1 font-mono">(F0 / 360)</span>
+            </div>
+          </div>
+
+          <!-- Right: Direct Remotion MP4 Export -->
+          <div class="flex items-center gap-1 shrink-0">
+            <button id="exportDirectBtn" onclick="renderVideoMP4()" title="Render video MP4" class="h-7 sm:h-8 px-2.5 sm:px-4 rounded-md bg-zinc-100 hover:bg-white text-xs font-semibold text-zinc-950 transition cursor-pointer flex items-center gap-1 shadow-xs">
+              <i class="fa-solid fa-download text-[10px] sm:text-[11px]"></i>
+              <span class="hidden sm:inline">Export MP4</span>
+              <span class="inline sm:hidden font-mono text-[10px]">MP4</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- TIMELINE SCRUBBER CONTAINER -->
+        <div class="flex-1 flex flex-col justify-center">
+          
+          <!-- Ruler markings -->
+          <div class="flex justify-between px-1 text-[8px] font-mono text-zinc-500 mb-1 select-none pointer-events-none">
+            <span>0s</span>
+            <span>25%</span>
+            <span>50%</span>
+            <span>75%</span>
+            <span>100%</span>
+          </div>
+
+          <!-- Interactive Timeline Track -->
+          <div class="relative w-full h-6 bg-zinc-950 border border-zinc-800 rounded overflow-hidden cursor-pointer select-none" id="timelineBar" onclick="scrubTimeline(event)" ontouchstart="scrubTouch(event)" ontouchmove="scrubTouch(event)">
+            
+            <!-- Dynamic Scenes Track -->
+            <div id="timelineTracks" class="absolute inset-y-0.5 left-0 right-0 flex px-0.5 gap-0.5"></div>
+            
+            <!-- Laser Playhead -->
+            <div id="playhead" class="absolute top-0 bottom-0 playhead-needle z-10 pointer-events-none" style="left: 0%;">
+              <div class="playhead-cap -mt-1"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </main>

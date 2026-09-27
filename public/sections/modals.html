@@ -1,0 +1,83 @@
+  <!-- ======================================================== -->
+  <!-- ESSENTIAL STUDIO MODALS                                   -->
+  <!-- ======================================================== -->
+
+  <!-- GALLERY MODAL -->
+  <div id="galleryModal" onclick="if(event.target===this)toggleGallery()" class="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#101218] border border-zinc-800 rounded-xl w-full max-w-xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+      <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-[#0d0f14]">
+        <h3 class="font-semibold text-sm flex items-center gap-2 text-zinc-100">
+          <i class="fa-solid fa-photo-film text-zinc-400"></i> Galeri Hasil Render MP4
+        </h3>
+        <div class="flex items-center gap-2">
+          <button onclick="deleteAllRenders()" class="h-8 px-3 rounded-md bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-medium cursor-pointer transition">Hapus Semua</button>
+          <button onclick="toggleGallery()" class="h-8 w-8 rounded-md hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer"><i class="fa-solid fa-xmark text-sm"></i></button>
+        </div>
+      </div>
+
+      <div id="galleryList" class="p-6 flex-1 overflow-y-auto custom-scrollbar space-y-3">
+        <p class="text-xs text-zinc-500">Memuat riwayat render...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" onclick="if(event.target===this)toggleSettings()" class="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#101218] border border-zinc-800 rounded-xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
+      <div class="px-6 py-4 border-b border-zinc-800 flex items-center justify-between bg-[#0d0f14]">
+        <h3 class="font-semibold text-sm flex items-center gap-2 text-zinc-100">
+          <i class="fa-solid fa-sliders text-zinc-400"></i> Pengaturan AI Director
+        </h3>
+        <button onclick="toggleSettings()" class="h-8 w-8 rounded-md hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center cursor-pointer"><i class="fa-solid fa-xmark text-sm"></i></button>
+      </div>
+      
+      <div class="p-6 space-y-4 text-xs">
+        <div>
+          <label class="font-medium text-zinc-300 block mb-1.5">Mode Pembuatan Skrip:</label>
+          <div class="p-3 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 leading-relaxed">
+            <span class="font-semibold text-zinc-200">Built-in MotionCraft Director:</span> Aktif langsung tanpa API key eksternal.
+          </div>
+        </div>
+
+        <div>
+          <label class="font-medium text-zinc-300 block mb-1.5">Custom AI Base URL (Opsional):</label>
+          <input id="cfgApiBase" type="text" placeholder="https://api.openai.com/v1 atau http://localhost:11434/v1" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500 select-text" />
+        </div>
+
+        <div>
+          <label class="font-medium text-zinc-300 block mb-1.5">Custom API Key (Opsional):</label>
+          <input id="cfgApiKey" type="password" placeholder="sk-..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500 select-text" />
+        </div>
+
+        <div>
+          <label class="font-medium text-zinc-300 block mb-1.5">Model Name:</label>
+          <input id="cfgModel" type="text" placeholder="gpt-4o-mini / mistral / llama3" class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500 select-text" />
+        </div>
+      </div>
+
+      <div class="px-6 py-3.5 border-t border-zinc-800 bg-[#0d0f14] flex justify-end gap-2">
+        <button onclick="saveAiSettings()" class="h-8 px-4 rounded-md bg-white hover:bg-zinc-200 text-zinc-950 font-semibold text-xs transition cursor-pointer shadow-xs">Simpan Pengaturan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RENDER PROGRESS MODAL -->
+  <div id="renderProgressModal" style="display:none;" class="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-[#101218] border border-zinc-800 rounded-xl w-full max-w-[420px] p-8 text-center shadow-2xl flex flex-col items-center gap-4">
+      <div class="w-10 h-10 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300">
+        <i class="fa-solid fa-circle-notch fa-spin text-base"></i>
+      </div>
+      <div>
+        <div class="text-base font-semibold text-white tracking-tight" id="renderProgressTitle">Sedang Merender Video MP4...</div>
+        <div class="text-xs text-zinc-400 mt-1.5 leading-relaxed" id="renderProgressDesc">
+          Remotion Engine sedang mengompilasi grafis visual & procedural audio DSP frame-demi-frame.
+        </div>
+      </div>
+      <div class="w-full bg-zinc-900 border border-zinc-800 rounded-full h-1.5 overflow-hidden">
+        <div class="w-full h-full bg-zinc-200 rounded-full animate-pulse"></div>
+      </div>
+      <div class="text-[11px] font-mono text-zinc-500" id="renderProgressDetails">
+        Target: 1080×1920 • 30 FPS • Remotion Chromium Headless
+      </div>
+    </div>
+  </div>

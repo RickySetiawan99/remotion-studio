@@ -1,0 +1,58 @@
+  <!-- TOP STUDIO HEADER -->
+  <header class="h-14 border-b border-zinc-800/80 bg-[#0d0f14] flex items-center justify-between px-4 sm:px-6 z-30 shrink-0 sticky top-0 md:relative">
+    
+    <!-- Left: Brand / Studio Identity -->
+    <div class="flex items-center gap-3">
+      <div class="cursor-pointer flex items-center gap-2.5" onclick="location.reload()">
+        <div class="w-8 h-8 rounded-md bg-zinc-800 border border-zinc-700/80 flex items-center justify-center text-zinc-100 shadow-xs">
+          <svg class="w-4 h-4 fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-sm tracking-tight text-white">MotionCraft</span>
+          <span class="text-[10px] font-mono text-zinc-400 px-1.5 py-0.5 rounded bg-zinc-800/80 border border-zinc-700/60 font-medium">v2.5</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Active Composition Indicator (Desktop) -->
+    <div id="headerSceneIndicator" class="hidden md:flex items-center gap-2 h-8 px-3 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-400">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+      <span id="headerCompTitle" class="text-zinc-200 font-medium max-w-[200px] lg:max-w-[260px] truncate">MotionCraft Studio</span>
+      <span class="text-zinc-600">/</span>
+      <span class="text-[11px] text-zinc-400 font-mono">Remotion 4.0</span>
+    </div>
+
+    <!-- Center: Mobile Tab Switcher (Editor Naskah vs Video Preview) -->
+    <div id="mobileSwitcher" class="md:hidden flex items-center p-0.5 bg-zinc-950/90 rounded-lg border border-zinc-800/90 shadow-inner">
+      <button type="button" id="mobileTabEditor" onclick="setMobileStudioTab('editor')" class="h-7 px-2.5 rounded-md text-[11px] font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer bg-zinc-800 text-white shadow-xs">
+        <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+        <span>Editor</span>
+      </button>
+      <button type="button" id="mobileTabPreview" onclick="setMobileStudioTab('preview')" class="h-7 px-2.5 rounded-md text-[11px] font-medium flex items-center justify-center gap-1.5 transition cursor-pointer text-zinc-400 hover:text-white">
+        <i class="fa-solid fa-play text-[10px]"></i>
+        <span>Preview</span>
+      </button>
+    </div>
+
+    <!-- Right: Studio Action Bar -->
+    <div class="flex items-center gap-2">
+      
+      <!-- AUDIO PROCEDURAL DSP PREVIEW & SYNC STATUS -->
+      <button id="btnAudioPreview" onclick="togglePlayerAudio()" title="Mute / Unmute Musik DSP & SFX Sinkron" class="h-8 flex items-center gap-1.5 px-3 rounded-md bg-zinc-800/70 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/60 text-xs font-mono transition cursor-pointer">
+        <i id="audioIcon" class="fa-solid fa-volume-high text-[11px] text-emerald-400"></i>
+        <span id="audioStatusText" class="hidden sm:inline">DSP Audio</span>
+      </button>
+
+      <!-- GALLERY BUTTON -->
+      <button onclick="toggleGallery()" title="Buka Galeri Video Hasil Render" class="h-8 text-xs px-3 rounded-md bg-zinc-800/70 hover:bg-zinc-800 text-zinc-300 hover:text-white font-medium flex items-center gap-1.5 border border-zinc-700/60 transition cursor-pointer">
+        <i class="fa-solid fa-photo-film text-zinc-400 text-[11px]"></i>
+        <span class="hidden sm:inline text-xs">Galeri</span>
+      </button>
+
+      <!-- SETTINGS BUTTON -->
+      <button onclick="toggleSettings()" title="Pengaturan AI Director" class="h-8 w-8 rounded-md bg-zinc-800/70 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-700/60 flex items-center justify-center transition cursor-pointer">
+        <i class="fa-solid fa-gear text-xs"></i>
+      </button>
+
+    </div>
+  </header>

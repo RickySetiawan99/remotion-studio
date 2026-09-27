@@ -1,0 +1,64 @@
+:root {
+  color-scheme: dark;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #090a0e;
+  color: #e2e8f0;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.011em;
+}
+
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+.font-serif { font-family: 'Playfair Display', serif; }
+
+/* Mobile Native Polish (mobile-native / antislop-layoutmobile) */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+  input, textarea, select {
+    font-size: 16px !important; /* Prevents iOS Safari 100% zoom jump on focus */
+  }
+}
+
+button, a, [role="button"], .elem-toggle-btn {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Emil Kowalski: tactile button feedback on press */
+button, .interactive-btn {
+  transition: transform 120ms var(--ease-out), background-color 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+
+button:active, .interactive-btn:active {
+  transform: scale(0.975);
+}
+
+/* Studio Scrollbars */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 999px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
+
+/* Playhead needle */
+.playhead-needle {
+  width: 1px;
+  background: #f43f5e;
+  box-shadow: 0 0 4px rgba(244, 63, 94, 0.4);
+}
+
+.playhead-cap {
+  width: 9px;
+  height: 9px;
+  background: #f43f5e;
+  transform: translateX(-4px) rotate(45deg);
+  border-radius: 1px;
+}

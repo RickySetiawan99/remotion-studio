@@ -1,4 +1,6 @@
 node_modules/
 renders/
+build/
 .env
 .DS_Store
+*.log
