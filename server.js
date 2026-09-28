@@ -318,7 +318,11 @@ Format JSON murni:
       if (fetchRes.ok) {
         const aiData = await fetchRes.json();
         let text = aiData.choices?.[0]?.message?.content || "";
-        text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Clean markdown backticks, SSE prefixes, etc.
+        text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        if (text.startsWith('data:')) {
+          text = text.replace(/^data:\s*/, '');
+        }
         const jsonStart = text.indexOf('{');
         const jsonEnd = text.lastIndexOf('}');
         if (jsonStart !== -1 && jsonEnd !== -1) {
@@ -486,6 +490,8 @@ app.post('/api/render-edu-video', async (req, res) => {
     console.warn("Audio synthesis warning:", audioErr.message);
   }
 
+  let tempVideoFile = hasAudio ? path.join(rendersDir, `temp_video_${timestamp}.mp4`) : outputFile;
+
   try {
     const { selectComposition, renderMedia } = await import('@remotion/renderer');
     const bundleLocation = await getRemotionBundle();
@@ -498,13 +504,25 @@ app.post('/api/render-edu-video', async (req, res) => {
       height
     };
 
+    const chromiumArgs = [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--disable-accelerated-2d-canvas'
+    ];
+
     const comp = await selectComposition({
       serveUrl: bundleLocation,
       id: 'MotionCraftVideo',
       inputProps,
+      chromiumOptions: {
+        enableMultiProcessOnLinux: true,
+        args: chromiumArgs
+      }
     });
 
-    const tempVideoFile = hasAudio ? path.join(rendersDir, `temp_video_${timestamp}.mp4`) : outputFile;
+    console.log(`[Render] Starting render: "${composition.title || 'Untitled'}" (${composition.scenes.length} scenes, ${composition.durationInFrames} frames @ ${fps}fps, ${width}x${height})`);
 
     await renderMedia({
       composition: comp,
@@ -512,8 +530,16 @@ app.post('/api/render-edu-video', async (req, res) => {
       codec: 'h264',
       outputLocation: tempVideoFile,
       inputProps,
+      concurrency: process.env.RENDER_CONCURRENCY ? parseInt(process.env.RENDER_CONCURRENCY, 10) : 1,
+      timeoutInMilliseconds: 300000,
       chromiumOptions: {
         enableMultiProcessOnLinux: true,
+        args: chromiumArgs
+      },
+      onProgress: ({ progress, renderedFrames }) => {
+        if (renderedFrames % 60 === 0 || progress === 1) {
+          console.log(`[Render Progress] ${(progress * 100).toFixed(1)}% | Frame ${renderedFrames}/${composition.durationInFrames}`);
+        }
       }
     });
 
@@ -537,12 +563,11 @@ app.post('/api/render-edu-video', async (req, res) => {
         });
         ff.on('error', reject);
       });
-
-      try { if (fs.existsSync(tempVideoFile)) fs.unlinkSync(tempVideoFile); } catch (e) {}
-      try { if (fs.existsSync(audioFile)) fs.unlinkSync(audioFile); } catch (e) {}
     }
 
     const stat = fs.statSync(outputFile);
+    console.log(`[Render Success] ${filename} (${(stat.size / (1024 * 1024)).toFixed(2)} MB)`);
+
     res.json({
       success: true,
       filename,
@@ -550,8 +575,16 @@ app.post('/api/render-edu-video', async (req, res) => {
       sizeMB: (stat.size / (1024 * 1024)).toFixed(2)
     });
   } catch (err) {
-    console.error("Remotion render error:", err);
+    console.error("[Render Error]:", err);
     res.status(500).json({ error: err.message });
+  } finally {
+    // Guaranteed cleanup of intermediate temporary video and audio files
+    if (hasAudio && tempVideoFile !== outputFile && fs.existsSync(tempVideoFile)) {
+      try { fs.unlinkSync(tempVideoFile); } catch (e) {}
+    }
+    if (fs.existsSync(audioFile)) {
+      try { fs.unlinkSync(audioFile); } catch (e) {}
+    }
   }
 });
 
