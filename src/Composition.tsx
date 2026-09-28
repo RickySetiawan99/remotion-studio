@@ -60,8 +60,9 @@ export interface Scene {
 
   // V2: Data chart block
   chartData?: {
-    type: 'bar-chart' | 'progress-ring' | 'pie-gauge';
-    values: { label: string; value: number; color?: string }[];
+    type?: 'bar-chart' | 'progress-ring' | 'pie-gauge' | 'bar' | string;
+    values?: (number | { label?: string; value?: number; color?: string })[];
+    labels?: string[];
     unit?: string;
     animateFrom?: number;
   };
@@ -696,13 +697,33 @@ const DataGaugeBlock: React.FC<{
   const { fps } = useVideoConfig();
   const animProgress = spr(frame, 8, fps, { damping: 16, stiffness: 100, mass: 0.8 });
 
-  if (chartData.type === 'progress-ring') {
-    const val = chartData.values[0];
-    if (!val) return null;
+  // Resilient normalization for both [{label, value}] and raw number arrays [10, 20, 30]
+  const rawValues = Array.isArray(chartData.values) ? chartData.values : [];
+  const normalizedValues = rawValues.map((v: any, idx: number) => {
+    if (typeof v === 'number') {
+      const label = chartData.labels?.[idx] || `Item ${idx + 1}`;
+      return { label, value: Number.isFinite(v) ? v : 0, color: undefined };
+    }
+    const num = Number(v?.value);
+    return {
+      label: String(v?.label || `Item ${idx + 1}`),
+      value: Number.isFinite(num) ? num : 0,
+      color: v?.color,
+    };
+  });
+
+  if (normalizedValues.length === 0) return null;
+
+  const chartType = (chartData.type === 'bar' || !chartData.type) ? 'bar-chart' : chartData.type;
+
+  if (chartType === 'progress-ring') {
+    const val = normalizedValues[0];
     const r = 80;
     const circ = 2 * Math.PI * r;
-    const pct = interpolate(animProgress, [0, 1], [chartData.animateFrom ?? 0, val.value], cl);
-    const dash = (pct / 100) * circ;
+    const fromVal = Number.isFinite(Number(chartData.animateFrom)) ? Number(chartData.animateFrom) : 0;
+    const targetVal = Number.isFinite(val.value) ? val.value : 0;
+    const pct = interpolate(animProgress, [0, 1], [fromVal, targetVal], cl);
+    const dash = ((Number.isFinite(pct) ? pct : 0) / 100) * circ;
     return (
       <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <svg width={200} height={200} viewBox="0 0 200 200">
@@ -728,17 +749,17 @@ const DataGaugeBlock: React.FC<{
     );
   }
 
-  if (chartData.type === 'pie-gauge') {
-    const val = chartData.values[0];
-    if (!val) return null;
-    const pct = interpolate(animProgress, [0, 1], [0, val.value / 100], cl);
+  if (chartType === 'pie-gauge') {
+    const val = normalizedValues[0];
+    const targetPct = Number.isFinite(val.value) ? val.value / 100 : 0;
+    const pct = interpolate(animProgress, [0, 1], [0, targetPct], cl);
     return (
       <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Pie radius={80} progress={pct} fill={val.color || theme.colors.accent}
+        <Pie radius={80} progress={Number.isFinite(pct) ? pct : 0} fill={val.color || theme.colors.accent}
           stroke={theme.colors.surfaceBorder} strokeWidth={2} />
         {val.label && (
           <div style={{ fontSize: 20, color: theme.colors.textMuted, fontWeight: 700, marginTop: 12 }}>
-            {val.label}: {Math.round(pct * 100)}{chartData.unit || '%'}
+            {val.label}: {Math.round((Number.isFinite(pct) ? pct : 0) * 100)}{chartData.unit || '%'}
           </div>
         )}
       </div>
@@ -746,11 +767,15 @@ const DataGaugeBlock: React.FC<{
   }
 
   // bar-chart
-  const maxVal = Math.max(...chartData.values.map(v => v.value), 1);
+  const maxVal = Math.max(...normalizedValues.map(v => v.value), 1);
   return (
     <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 700 }}>
-      {chartData.values.map((v, i) => {
-        const barW = interpolate(animProgress, [0, 1], [0, (v.value / maxVal) * 100], cl);
+      {normalizedValues.map((v, i) => {
+        const targetPercent = maxVal > 0 ? (v.value / maxVal) * 100 : 0;
+        const safeTargetPercent = Number.isFinite(targetPercent) ? targetPercent : 0;
+        const safeValue = Number.isFinite(v.value) ? v.value : 0;
+        const barW = interpolate(animProgress, [0, 1], [0, safeTargetPercent], cl);
+        const valNum = Math.round(interpolate(animProgress, [0, 1], [0, safeValue], cl));
         return (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{ width: 80, fontSize: 16, fontWeight: 700, color: theme.colors.textMuted, textAlign: 'right' }}>
@@ -758,13 +783,13 @@ const DataGaugeBlock: React.FC<{
             </div>
             <div style={{ flex: 1, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
               <div style={{
-                width: `${barW}%`, height: '100%', borderRadius: 8,
+                width: `${Number.isFinite(barW) ? barW : 0}%`, height: '100%', borderRadius: 8,
                 background: v.color || theme.colors.accent,
                 boxShadow: `0 0 12px ${theme.colors.accentGlow}`,
               }} />
             </div>
             <div style={{ width: 50, fontSize: 16, fontWeight: 800, color: theme.colors.textPrimary, fontFamily: 'monospace' }}>
-              {Math.round(interpolate(animProgress, [0, 1], [0, v.value], cl))}{chartData.unit || ''}
+              {valNum}{chartData.unit || ''}
             </div>
           </div>
         );
@@ -1304,7 +1329,7 @@ const SceneRenderer: React.FC<{
                 lineHeight: 1,
               }}
             >
-              {typeof scene.metricValue === 'number'
+              {typeof scene.metricValue === 'number' && Number.isFinite(scene.metricValue)
                 ? Math.round(interpolate(enterSpring, [0, 1], [0, scene.metricValue]))
                 : scene.metricValue}
             </div>
@@ -1539,7 +1564,25 @@ export const MainVideo: React.FC<VideoProps> = ({
 
   // Timeline progress (0 to 1)
   const totalProgress = Math.min(1, frame / durationInFrames);
-  const scenes = composition?.scenes || defaultVideoProps.composition.scenes;
+  const rawScenes = composition?.scenes || defaultVideoProps.composition.scenes;
+  let currentOffset = 0;
+  const scenes: Scene[] = rawScenes.map((sc: any) => {
+    const dur = Number.isFinite(Number(sc.durationFrames))
+      ? Number(sc.durationFrames)
+      : (sc.endFrame != null && sc.startFrame != null && Number.isFinite(Number(sc.endFrame) - Number(sc.startFrame))
+          ? Number(sc.endFrame) - Number(sc.startFrame)
+          : 150);
+    const safeDur = Math.max(1, Math.round(dur));
+    const start = Number.isFinite(Number(sc.startFrame)) ? Number(sc.startFrame) : currentOffset;
+    const end = Number.isFinite(Number(sc.endFrame)) ? Number(sc.endFrame) : start + safeDur;
+    currentOffset = end;
+    return {
+      ...sc,
+      durationFrames: safeDur,
+      startFrame: start,
+      endFrame: end,
+    } as Scene;
+  });
 
   // Determine if transitions are used
   const useTransitions = transition !== 'none' && scenes.length > 1;
