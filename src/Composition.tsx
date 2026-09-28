@@ -6,7 +6,15 @@ import {
   useVideoConfig,
   Sequence,
   Audio,
+  AbsoluteFill,
 } from 'remotion';
+import { TransitionSeries, linearTiming } from '@remotion/transitions';
+import { fade } from '@remotion/transitions/fade';
+import { slide } from '@remotion/transitions/slide';
+import { wipe } from '@remotion/transitions/wipe';
+import { flip } from '@remotion/transitions/flip';
+import { clockWipe } from '@remotion/transitions/clock-wipe';
+import { Star, Polygon, Triangle, Pie } from '@remotion/shapes';
 
 // ============================================================================
 // DATA CONTRACT: SCENE & COMPOSITION INTERFACES
@@ -50,9 +58,101 @@ export interface Scene {
   quoteText?: string;
   quoteAuthor?: string;
 
+  // V2: Data chart block
+  chartData?: {
+    type: 'bar-chart' | 'progress-ring' | 'pie-gauge';
+    values: { label: string; value: number; color?: string }[];
+    unit?: string;
+    animateFrom?: number;
+  };
+  doodleTarget?: 'headline' | 'metric' | 'cta';
+
   // Computed timeline frames
   startFrame: number;
   endFrame: number;
+}
+
+export type VibePresetId = 'ramai' | 'eksklusif' | 'cyber' | 'corporate';
+export type TransitionType = 'fade' | 'slide' | 'wipe' | 'flip' | 'clockWipe' | 'auto' | 'none';
+export type TextAnimMode = 'word-spring' | 'typewriter' | 'gradient-clip' | 'highlight-ribbon' | 'auto';
+export type AspectRatioId = 'portrait' | 'landscape' | 'square';
+export type VisualizerStyle = 'frequency-bars' | 'waveform-line' | 'none';
+export type ShapeType = 'star' | 'polygon' | 'triangle' | 'pie';
+
+const ASPECT_RATIOS: Record<AspectRatioId, { width: number; height: number }> = {
+  portrait: { width: 1080, height: 1920 },
+  landscape: { width: 1920, height: 1080 },
+  square: { width: 1080, height: 1080 },
+};
+
+const TRANSITION_MAP: Record<string, (w: number, h: number) => any> = {
+  fade: () => fade(),
+  slide: () => slide(),
+  wipe: () => wipe(),
+  flip: () => flip(),
+  clockWipe: (w, h) => clockWipe({ width: w, height: h }),
+};
+
+const VIBE_TRANSITION_AUTO: Record<VibePresetId, TransitionType[]> = {
+  ramai: ['slide', 'wipe'],
+  eksklusif: ['fade'],
+  cyber: ['flip', 'wipe'],
+  corporate: ['clockWipe', 'fade'],
+};
+
+const VIBE_TEXT_AUTO: Record<VibePresetId, TextAnimMode> = {
+  ramai: 'word-spring',
+  eksklusif: 'gradient-clip',
+  cyber: 'typewriter',
+  corporate: 'highlight-ribbon',
+};
+
+export interface VibeThemeTokens {
+  id: VibePresetId;
+  label: string;
+  tag: string;
+  isLight?: boolean;
+  colors: {
+    accent: string;
+    accentGlow: string;
+    secondary: string;
+    bgGradient: [string, string, string];
+    surface: string;
+    surfaceBorder: string;
+    textPrimary: string;
+    textMuted: string;
+    highlightRibbon: string;
+  };
+  motion: {
+    springDamping: number;
+    springStiffness: number;
+    springMass: number;
+    transitionFrames: number;
+    bounceIntensity: number;
+  };
+  ambience: {
+    show3DGrid: boolean;
+    showParticles: boolean;
+    showScanlines: boolean;
+    showAuraGlow: boolean;
+    glassBlurPx: number;
+  };
+  audio: {
+    musicPreset: string;
+    targetBpm: number;
+    sfxPack: string;
+    sfxGainMultiplier: number;
+  };
+  // Compatibility properties
+  bg: string[];
+  cardBg: string;
+  cardBorder: string;
+  text: string;
+  sub: string;
+  accent: string;
+  accentGlow: string;
+  accent2: string;
+  font: string;
 }
 
 export interface VideoProps {
@@ -60,12 +160,37 @@ export interface VideoProps {
   composition: {
     title: string;
     scenes: Scene[];
+    fps?: number;
+    durationInFrames?: number;
+    durationSec?: number;
+    width?: number;
+    height?: number;
   };
+  vibe?: VibePresetId | string;
+  theme?: Partial<VibeThemeTokens>;
+  persona?: string;
+  activeVisualElements?: string[];
   style?: string;
   durationSec?: number;
   width?: number;
   height?: number;
   audioUrl?: string;
+  // V2 fields
+  aspectRatio?: AspectRatioId;
+  transition?: TransitionType;
+  transitionDurationFrames?: number;
+  textAnimMode?: TextAnimMode;
+  kineticShapes?: {
+    enabled: boolean;
+    shapes: ShapeType[];
+    density: number;
+  };
+  audioVisualizer?: {
+    enabled: boolean;
+    style: VisualizerStyle;
+    numberOfSamples: number;
+    opacity?: number;
+  };
 }
 
 /**
@@ -117,51 +242,143 @@ export const defaultVideoProps: VideoProps = {
       },
     ],
   },
+  vibe: 'ramai',
   style: 'pi-v2-dark',
   durationSec: 4,
 };
 
 // ============================================================================
-// 7 CURATED HIGH-TASTE DESIGN THEMES
+// THE 4 CORE VIDEO VIBE PRESETS (Centralized Parametric Design Tokens)
 // ============================================================================
-export const THEMES: Record<string, {
-  isLight?: boolean;
-  bg: string[];
-  cardBg: string;
-  cardBorder: string;
-  text: string;
-  sub: string;
-  accent: string;
-  accentGlow: string;
-  accent2: string;
-  font: string;
-}> = {
-  'pi-v2-dark': {
+export const VIBE_THEMES: Record<VibePresetId, VibeThemeTokens> = {
+  ramai: {
+    id: 'ramai',
+    label: 'Ramai & Viral',
+    tag: 'High Energy & Punchy',
     isLight: false,
-    bg: ['#1e1b4b', '#0f172a', '#030712'],
-    cardBg: 'rgba(15, 23, 42, 0.94)',
-    cardBorder: 'rgba(99, 102, 241, 0.45)',
+    colors: {
+      accent: '#f59e0b',
+      accentGlow: 'rgba(245, 158, 11, 0.45)',
+      secondary: '#ef4444',
+      bgGradient: ['#3b1704', '#180d05', '#050201'],
+      surface: 'rgba(28, 16, 8, 0.90)',
+      surfaceBorder: 'rgba(245, 158, 11, 0.45)',
+      textPrimary: '#ffffff',
+      textMuted: '#fde68a',
+      highlightRibbon: 'rgba(245, 158, 11, 0.32)',
+    },
+    motion: {
+      springDamping: 11,
+      springStiffness: 175,
+      springMass: 0.8,
+      transitionFrames: 14,
+      bounceIntensity: 0.8,
+    },
+    ambience: {
+      show3DGrid: true,
+      showParticles: true,
+      showScanlines: false,
+      showAuraGlow: true,
+      glassBlurPx: 16,
+    },
+    audio: {
+      musicPreset: 'hype-punch',
+      targetBpm: 126,
+      sfxPack: 'digital-punch',
+      sfxGainMultiplier: 1.6,
+    },
+    bg: ['#451a03', '#1c0a00', '#0a0300'],
+    cardBg: 'rgba(30, 14, 4, 0.92)',
+    cardBorder: 'rgba(245, 158, 11, 0.45)',
     text: '#ffffff',
-    sub: '#94a3b8',
-    accent: '#6366f1',
-    accentGlow: 'rgba(99, 102, 241, 0.35)',
-    accent2: '#38bdf8',
+    sub: '#fde68a',
+    accent: '#f59e0b',
+    accentGlow: 'rgba(245, 158, 11, 0.45)',
+    accent2: '#ef4444',
     font: 'system-ui, -apple-system, sans-serif',
   },
-  'remotion-light': {
-    isLight: true,
-    bg: ['#ffffff', '#f0f9ff', '#e0f2fe'],
-    cardBg: 'rgba(255, 255, 255, 0.95)',
-    cardBorder: 'rgba(2, 132, 199, 0.22)',
-    text: '#0f172a',
-    sub: '#475569',
-    accent: '#0284c7',
-    accentGlow: 'rgba(2, 132, 199, 0.35)',
-    accent2: '#0ea5e9',
-    font: 'system-ui, -apple-system, sans-serif',
-  },
-  'tech-neon-soft': {
+  eksklusif: {
+    id: 'eksklusif',
+    label: 'Eksklusif & Minimalis',
+    tag: 'Luxury & Editorial',
     isLight: false,
+    colors: {
+      accent: '#f8fafc',
+      accentGlow: 'rgba(248, 250, 252, 0.25)',
+      secondary: '#94a3b8',
+      bgGradient: ['#111827', '#080d1a', '#03060d'],
+      surface: 'rgba(15, 23, 42, 0.75)',
+      surfaceBorder: 'rgba(255, 255, 255, 0.16)',
+      textPrimary: '#f8fafc',
+      textMuted: '#94a3b8',
+      highlightRibbon: 'rgba(255, 255, 255, 0.16)',
+    },
+    motion: {
+      springDamping: 24,
+      springStiffness: 85,
+      springMass: 1.2,
+      transitionFrames: 22,
+      bounceIntensity: 0.1,
+    },
+    ambience: {
+      show3DGrid: false,
+      showParticles: false,
+      showScanlines: false,
+      showAuraGlow: true,
+      glassBlurPx: 24,
+    },
+    audio: {
+      musicPreset: 'calm-editorial',
+      targetBpm: 100,
+      sfxPack: 'organic-subtle',
+      sfxGainMultiplier: 0.9,
+    },
+    bg: ['#1e293b', '#0f172a', '#020617'],
+    cardBg: 'rgba(15, 23, 42, 0.85)',
+    cardBorder: 'rgba(255, 255, 255, 0.18)',
+    text: '#f8fafc',
+    sub: '#94a3b8',
+    accent: '#e2e8f0',
+    accentGlow: 'rgba(226, 232, 240, 0.25)',
+    accent2: '#cbd5e1',
+    font: 'system-ui, -apple-system, sans-serif',
+  },
+  cyber: {
+    id: 'cyber',
+    label: 'Cyber Tech',
+    tag: 'Developer & Terminal',
+    isLight: false,
+    colors: {
+      accent: '#06b6d4',
+      accentGlow: 'rgba(6, 182, 212, 0.40)',
+      secondary: '#10b981',
+      bgGradient: ['#042f2e', '#051923', '#01090f'],
+      surface: 'rgba(5, 25, 35, 0.92)',
+      surfaceBorder: 'rgba(6, 182, 212, 0.45)',
+      textPrimary: '#ecfeff',
+      textMuted: '#67e8f9',
+      highlightRibbon: 'rgba(6, 182, 212, 0.25)',
+    },
+    motion: {
+      springDamping: 14,
+      springStiffness: 140,
+      springMass: 0.9,
+      transitionFrames: 16,
+      bounceIntensity: 0.4,
+    },
+    ambience: {
+      show3DGrid: true,
+      showParticles: true,
+      showScanlines: true,
+      showAuraGlow: true,
+      glassBlurPx: 12,
+    },
+    audio: {
+      musicPreset: 'cyber-grid',
+      targetBpm: 120,
+      sfxPack: 'cyber-terminal',
+      sfxGainMultiplier: 1.3,
+    },
     bg: ['#042f2e', '#022c22', '#020617'],
     cardBg: 'rgba(4, 47, 46, 0.92)',
     cardBorder: 'rgba(45, 212, 191, 0.45)',
@@ -172,55 +389,93 @@ export const THEMES: Record<string, {
     accent2: '#10b981',
     font: 'ui-monospace, Menlo, monospace',
   },
-  'hyper-crypto': {
+  corporate: {
+    id: 'corporate',
+    label: 'Clean Corporate',
+    tag: 'Enterprise & Data',
     isLight: false,
-    bg: ['#3b0764', '#1e1b4b', '#030712'],
-    cardBg: 'rgba(24, 9, 43, 0.94)',
-    cardBorder: 'rgba(168, 85, 247, 0.45)',
+    colors: {
+      accent: '#3b82f6',
+      accentGlow: 'rgba(59, 130, 246, 0.35)',
+      secondary: '#6366f1',
+      bgGradient: ['#1e1b4b', '#0f172a', '#030712'],
+      surface: 'rgba(15, 23, 42, 0.90)',
+      surfaceBorder: 'rgba(59, 130, 246, 0.35)',
+      textPrimary: '#ffffff',
+      textMuted: '#94a3b8',
+      highlightRibbon: 'rgba(59, 130, 246, 0.25)',
+    },
+    motion: {
+      springDamping: 18,
+      springStiffness: 110,
+      springMass: 1.0,
+      transitionFrames: 18,
+      bounceIntensity: 0.2,
+    },
+    ambience: {
+      show3DGrid: false,
+      showParticles: false,
+      showScanlines: false,
+      showAuraGlow: true,
+      glassBlurPx: 20,
+    },
+    audio: {
+      musicPreset: 'corporate-modern',
+      targetBpm: 114,
+      sfxPack: 'clean-interface',
+      sfxGainMultiplier: 1.1,
+    },
+    bg: ['#1e1b4b', '#0f172a', '#030712'],
+    cardBg: 'rgba(15, 23, 42, 0.94)',
+    cardBorder: 'rgba(99, 102, 241, 0.45)',
     text: '#ffffff',
-    sub: '#d8b4fe',
-    accent: '#a855f7',
-    accentGlow: 'rgba(168, 85, 247, 0.35)',
-    accent2: '#eab308',
-    font: 'system-ui, sans-serif',
-  },
-  'sunset-creator': {
-    isLight: false,
-    bg: ['#450a0a', '#1c1917', '#09090b'],
-    cardBg: 'rgba(28, 25, 23, 0.94)',
-    cardBorder: 'rgba(249, 115, 22, 0.45)',
-    text: '#ffffff',
-    sub: '#fdba74',
-    accent: '#f97316',
-    accentGlow: 'rgba(249, 115, 22, 0.35)',
-    accent2: '#ef4444',
-    font: 'system-ui, sans-serif',
-  },
-  'warm-paper': {
-    isLight: true,
-    bg: ['#fffbeb', '#fef3c7', '#fde68a'],
-    cardBg: 'rgba(255, 255, 255, 0.96)',
-    cardBorder: 'rgba(217, 119, 6, 0.35)',
-    text: '#451a03',
-    sub: '#78350f',
-    accent: '#d97706',
-    accentGlow: 'rgba(217, 119, 6, 0.22)',
-    accent2: '#b45309',
-    font: 'Georgia, serif',
-  },
-  'mono-editorial': {
-    isLight: false,
-    bg: ['#18181b', '#09090b', '#000000'],
-    cardBg: 'rgba(24, 24, 27, 0.95)',
-    cardBorder: 'rgba(255, 255, 255, 0.25)',
-    text: '#f4f4f5',
-    sub: '#a1a1aa',
-    accent: '#e4e4e7',
-    accentGlow: 'rgba(255, 255, 255, 0.18)',
-    accent2: '#ffffff',
-    font: 'ui-monospace, monospace',
+    sub: '#94a3b8',
+    accent: '#6366f1',
+    accentGlow: 'rgba(99, 102, 241, 0.35)',
+    accent2: '#38bdf8',
+    font: 'system-ui, -apple-system, sans-serif',
   },
 };
+
+/**
+ * Resolves a complete VibeThemeTokens object from input props
+ */
+export function resolveVibeTheme(
+  vibe?: string,
+  customTheme?: Partial<VibeThemeTokens>,
+  legacyStyle?: string
+): VibeThemeTokens {
+  const vKey = String(vibe || '').toLowerCase().trim();
+  let base: VibeThemeTokens = VIBE_THEMES.ramai;
+
+  if (vKey === 'ramai' || vKey === 'eksklusif' || vKey === 'cyber' || vKey === 'corporate') {
+    base = VIBE_THEMES[vKey as VibePresetId];
+  } else if (legacyStyle) {
+    if (legacyStyle === 'sunset-creator' || legacyStyle === 'hyper-crypto') {
+      base = VIBE_THEMES.ramai;
+    } else if (legacyStyle === 'warm-paper' || legacyStyle === 'mono-editorial') {
+      base = VIBE_THEMES.eksklusif;
+    } else if (legacyStyle === 'tech-neon-soft') {
+      base = VIBE_THEMES.cyber;
+    } else {
+      base = VIBE_THEMES.corporate;
+    }
+  }
+
+  if (!customTheme) return base;
+
+  return {
+    ...base,
+    ...customTheme,
+    colors: { ...base.colors, ...(customTheme.colors || {}) },
+    motion: { ...base.motion, ...(customTheme.motion || {}) },
+    ambience: { ...base.ambience, ...(customTheme.ambience || {}) },
+    audio: { ...base.audio, ...(customTheme.audio || {}) },
+  };
+}
+
+// Legacy fallback reference
+export const THEMES = VIBE_THEMES as unknown as Record<string, VibeThemeTokens>;
 
 // ============================================================================
 // MOTION HELPERS
@@ -241,6 +496,330 @@ const spr = (
     fps: 60,
     config: { damping: config.damping, stiffness: config.stiffness, mass: config.mass ?? 0.6 },
   });
+
+// ============================================================================
+// V2: TRANSITION RESOLVER
+// ============================================================================
+function getTransitionPresentation(
+  transitionType: TransitionType,
+  vibeId: VibePresetId,
+  sceneIdx: number,
+  w: number = 1080,
+  h: number = 1920
+): any {
+  if (transitionType === 'none') return null;
+  let key: string = transitionType;
+  if (transitionType === 'auto') {
+    const opts = VIBE_TRANSITION_AUTO[vibeId] || ['fade'];
+    key = opts[sceneIdx % opts.length];
+  }
+  const factory = TRANSITION_MAP[key];
+  return factory ? factory(w, h) : fade();
+}
+
+// ============================================================================
+// V2: KINETIC SHAPES LAYER
+// ============================================================================
+const KineticShapesLayer: React.FC<{
+  shapes: ShapeType[];
+  density: number;
+  theme: VibeThemeTokens;
+}> = ({ shapes, density, theme }) => {
+  const frame = useCurrentFrame();
+  const { width, height } = useVideoConfig();
+  const items: React.ReactNode[] = [];
+  const colors = [theme.colors.accent, theme.colors.secondary, theme.accent2 || theme.colors.accent];
+
+  for (let i = 0; i < density; i++) {
+    const shapeType = shapes[i % shapes.length];
+    const color = colors[i % colors.length];
+    const seed = i * 137.5;
+    const x = ((seed * 7.3) % width);
+    const y = ((seed * 4.1) % height);
+    const rot = (frame * (0.5 + i * 0.3)) % 360;
+    const floatY = Math.sin(frame * 0.04 + i * 1.5) * 15;
+    const opacity = 0.25 + (i % 3) * 0.08;
+    const size = 30 + (i % 4) * 15;
+
+    let shapeEl: React.ReactNode = null;
+    if (shapeType === 'star') {
+      shapeEl = <Star points={5} innerRadius={size * 0.4} outerRadius={size} fill={color} />;
+    } else if (shapeType === 'polygon') {
+      shapeEl = <Polygon points={6} radius={size} fill={color} />;
+    } else if (shapeType === 'triangle') {
+      shapeEl = <Triangle length={size} direction="up" fill={color} />;
+    } else if (shapeType === 'pie') {
+      const progress = interpolate(Math.sin(frame * 0.03 + i), [-1, 1], [0.2, 0.8], cl);
+      shapeEl = <Pie radius={size} progress={progress} fill={color} />;
+    }
+
+    if (shapeEl) {
+      items.push(
+        <div
+          key={`shape-${i}`}
+          style={{
+            position: 'absolute',
+            left: x,
+            top: y,
+            transform: `translateY(${floatY}px) rotate(${rot}deg)`,
+            opacity,
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        >
+          {shapeEl}
+        </div>
+      );
+    }
+  }
+
+  return <>{items}</>;
+};
+
+// ============================================================================
+// V2: KINETIC TEXT (4 MODES)
+// ============================================================================
+const KineticTextV2: React.FC<{
+  text: string;
+  mode: TextAnimMode;
+  theme: VibeThemeTokens;
+  fps: number;
+  fontSize?: number;
+}> = ({ text, mode, theme, fps, fontSize = 72 }) => {
+  const frame = useCurrentFrame();
+
+  if (mode === 'typewriter') {
+    const totalChars = text.replace(/\*/g, '').length;
+    const visibleChars = Math.floor(frame * 1.2);
+    const shown = text.replace(/\*/g, '').slice(0, visibleChars);
+    const showCursor = Math.floor(frame / 8) % 2 === 0;
+    return (
+      <div style={{
+        fontSize, fontWeight: 900, color: theme.colors.textPrimary,
+        fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1.3,
+        textAlign: 'center', letterSpacing: '-0.02em',
+      }}>
+        {shown}
+        <span style={{ opacity: showCursor && visibleChars < totalChars ? 1 : 0, color: theme.colors.accent }}>▋</span>
+      </div>
+    );
+  }
+
+  if (mode === 'gradient-clip') {
+    const gradOffset = frame * 3;
+    return (
+      <div style={{
+        fontSize, fontWeight: 900, lineHeight: 1.22, textAlign: 'center',
+        letterSpacing: '-0.03em',
+        background: `linear-gradient(90deg, ${theme.colors.accent} ${gradOffset}%, ${theme.colors.secondary} ${gradOffset + 40}%, ${theme.colors.textPrimary} ${gradOffset + 80}%)`,
+        backgroundClip: 'text',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        color: 'transparent',
+      }}>
+        {text.replace(/\*/g, '')}
+      </div>
+    );
+  }
+
+  if (mode === 'highlight-ribbon') {
+    const parts = (text || '').split(/(\*[^*]+\*)/g).filter(Boolean);
+    return (
+      <div style={{
+        fontSize, fontWeight: 900, lineHeight: 1.22, textAlign: 'center',
+        letterSpacing: '-0.03em', color: theme.colors.textPrimary,
+        display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 12px',
+      }}>
+        {parts.map((p: string, i: number) => {
+          const isHl = p.startsWith('*') && p.endsWith('*');
+          const clean = p.replace(/\*/g, '');
+          const delay = i * 4;
+          const s = spr(frame, delay, fps, { damping: 16, stiffness: 120, mass: 0.6 });
+          const op = ramp(frame, delay, 5);
+          if (isHl) {
+            const ribbonW = interpolate(s, [0, 1], [0, 100], cl);
+            return (
+              <span key={i} style={{
+                display: 'inline-block', position: 'relative',
+                opacity: op, color: theme.colors.accent, padding: '2px 14px',
+              }}>
+                <span style={{
+                  position: 'absolute', inset: 0, borderRadius: 10,
+                  background: theme.colors.highlightRibbon,
+                  transform: `scaleX(${ribbonW / 100})`, transformOrigin: 'left',
+                }} />
+                <span style={{ position: 'relative' }}>{clean}</span>
+              </span>
+            );
+          }
+          return <span key={i} style={{ display: 'inline-block', opacity: op }}>{clean}</span>;
+        })}
+      </div>
+    );
+  }
+
+  // word-spring (default)
+  const words = (text || '').replace(/\*/g, '').split(/\s+/).filter(Boolean);
+  return (
+    <div style={{
+      fontSize, fontWeight: 900, lineHeight: 1.22, textAlign: 'center',
+      letterSpacing: '-0.03em', display: 'flex', flexWrap: 'wrap',
+      justifyContent: 'center', gap: '6px 14px',
+    }}>
+      {words.map((w: string, i: number) => {
+        const delay = i * 3;
+        const s = spr(frame, delay, fps, { damping: 12, stiffness: 150, mass: 0.5 });
+        const op = ramp(frame, delay, 4);
+        const ty = interpolate(s, [0, 1], [30, 0]);
+        const sc = interpolate(s, [0, 1], [0.7, 1]);
+        return (
+          <span key={i} style={{
+            display: 'inline-block', opacity: op, color: theme.colors.textPrimary,
+            transform: `translateY(${ty}px) scale(${sc})`,
+          }}>
+            {w}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
+// ============================================================================
+// V2: DATA GAUGE / CHART BLOCK
+// ============================================================================
+const DataGaugeBlock: React.FC<{
+  chartData: NonNullable<Scene['chartData']>;
+  theme: VibeThemeTokens;
+}> = ({ chartData, theme }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const animProgress = spr(frame, 8, fps, { damping: 16, stiffness: 100, mass: 0.8 });
+
+  if (chartData.type === 'progress-ring') {
+    const val = chartData.values[0];
+    if (!val) return null;
+    const r = 80;
+    const circ = 2 * Math.PI * r;
+    const pct = interpolate(animProgress, [0, 1], [chartData.animateFrom ?? 0, val.value], cl);
+    const dash = (pct / 100) * circ;
+    return (
+      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <svg width={200} height={200} viewBox="0 0 200 200">
+          <circle cx={100} cy={100} r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth={12} />
+          <circle
+            cx={100} cy={100} r={r} fill="none"
+            stroke={val.color || theme.colors.accent}
+            strokeWidth={12} strokeLinecap="round"
+            strokeDasharray={`${dash} ${circ}`}
+            transform="rotate(-90 100 100)"
+          />
+          <text x={100} y={108} textAnchor="middle" fontSize={36} fontWeight={900}
+            fill={theme.colors.textPrimary} fontFamily="monospace">
+            {Math.round(pct)}{chartData.unit || '%'}
+          </text>
+        </svg>
+        {val.label && (
+          <div style={{ fontSize: 20, color: theme.colors.textMuted, fontWeight: 700, marginTop: 8 }}>
+            {val.label}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (chartData.type === 'pie-gauge') {
+    const val = chartData.values[0];
+    if (!val) return null;
+    const pct = interpolate(animProgress, [0, 1], [0, val.value / 100], cl);
+    return (
+      <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Pie radius={80} progress={pct} fill={val.color || theme.colors.accent}
+          stroke={theme.colors.surfaceBorder} strokeWidth={2} />
+        {val.label && (
+          <div style={{ fontSize: 20, color: theme.colors.textMuted, fontWeight: 700, marginTop: 12 }}>
+            {val.label}: {Math.round(pct * 100)}{chartData.unit || '%'}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // bar-chart
+  const maxVal = Math.max(...chartData.values.map(v => v.value), 1);
+  return (
+    <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 700 }}>
+      {chartData.values.map((v, i) => {
+        const barW = interpolate(animProgress, [0, 1], [0, (v.value / maxVal) * 100], cl);
+        return (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ width: 80, fontSize: 16, fontWeight: 700, color: theme.colors.textMuted, textAlign: 'right' }}>
+              {v.label}
+            </div>
+            <div style={{ flex: 1, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <div style={{
+                width: `${barW}%`, height: '100%', borderRadius: 8,
+                background: v.color || theme.colors.accent,
+                boxShadow: `0 0 12px ${theme.colors.accentGlow}`,
+              }} />
+            </div>
+            <div style={{ width: 50, fontSize: 16, fontWeight: 800, color: theme.colors.textPrimary, fontFamily: 'monospace' }}>
+              {Math.round(interpolate(animProgress, [0, 1], [0, v.value], cl))}{chartData.unit || ''}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ponytail: uses Math.sin pseudo-visualization; upgrade to useAudioData when real audio files become standard inputs
+const AudioFrequencyViz: React.FC<{
+  vizStyle: VisualizerStyle;
+  theme: VibeThemeTokens;
+  numberOfSamples: number;
+  opacity: number;
+}> = ({ vizStyle, theme, numberOfSamples, opacity }) => {
+  const frame = useCurrentFrame();
+  const { width } = useVideoConfig();
+
+  if (vizStyle === 'none') return null;
+
+  if (vizStyle === 'waveform-line') {
+    const pts: string[] = [];
+    const segW = (width - 100) / numberOfSamples;
+    for (let i = 0; i <= numberOfSamples; i++) {
+      const y = 50 + Math.sin(frame * 0.1 + i * 0.5) * 30 + Math.cos(frame * 0.07 + i * 0.3) * 15;
+      pts.push(`${i * segW},${y}`);
+    }
+    return (
+      <div style={{ position: 'absolute', bottom: 40, left: 50, right: 50, height: 100, opacity, pointerEvents: 'none', zIndex: 3 }}>
+        <svg width="100%" height="100%" viewBox={`0 0 ${width - 100} 100`} preserveAspectRatio="none">
+          <polyline points={pts.join(' ')} fill="none" stroke={theme.colors.accent} strokeWidth={2.5} />
+        </svg>
+      </div>
+    );
+  }
+
+  // frequency-bars
+  return (
+    <div style={{
+      position: 'absolute', bottom: 40, left: 50, right: 50, height: 50,
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 3,
+      opacity, pointerEvents: 'none', zIndex: 3,
+    }}>
+      {Array.from({ length: numberOfSamples }).map((_, i) => {
+        const h = Math.abs(Math.sin(frame * 0.12 + i * 0.35) * 40) + 4;
+        return (
+          <div key={i} style={{
+            flex: 1, height: h, borderRadius: 3,
+            backgroundColor: i % 2 === 0 ? theme.colors.accent : (theme.accent2 || theme.colors.secondary),
+          }} />
+        );
+      })}
+    </div>
+  );
+};
 
 // ============================================================================
 // HIGH-TASTE 2D / 3D MOTION GRAPHIC PRIMITIVES
@@ -550,7 +1129,7 @@ const KineticHeadline: React.FC<{
 // ============================================================================
 const SceneRenderer: React.FC<{
   scene: Scene;
-  theme: typeof THEMES['pi-v2-dark'];
+  theme: VibeThemeTokens;
   width: number;
   height: number;
   fps: number;
@@ -558,11 +1137,16 @@ const SceneRenderer: React.FC<{
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
 
-  // Snappy enter spring with soft settle
-  const enterSpring = spr(frame, 0, fps, { damping: 14, stiffness: 100, mass: 0.6 });
+  // Dynamic spring physics from Vibe tokens
+  const damping = theme.motion?.springDamping ?? 14;
+  const stiffness = theme.motion?.springStiffness ?? 110;
+  const mass = theme.motion?.springMass ?? 0.8;
+  const transitionFrames = theme.motion?.transitionFrames ?? 14;
 
-  // Fast exit blur + fade
-  const exitProgress = ramp(frame, durationInFrames - 14, 14);
+  const enterSpring = spr(frame, 0, fps, { damping, stiffness, mass });
+
+  // Dynamic exit transition
+  const exitProgress = ramp(frame, durationInFrames - transitionFrames, transitionFrames);
   const exitOpacity = 1 - exitProgress;
   const exitBlur = exitProgress * 12;
 
@@ -576,6 +1160,7 @@ const SceneRenderer: React.FC<{
   const hasCode = Boolean(scene.codeSnippet);
   const hasMedia = Boolean(scene.mediaUrl);
   const hasCta = Boolean(scene.ctaText);
+  const hasChartData = Boolean(scene.chartData && scene.chartData.values && scene.chartData.values.length > 0);
 
   return (
     <div
@@ -907,8 +1492,13 @@ const SceneRenderer: React.FC<{
           </div>
         )}
 
+        {/* V2: Data Chart / Gauge Block */}
+        {hasChartData && (
+          <DataGaugeBlock chartData={scene.chartData!} theme={theme} />
+        )}
+
         {/* H. Authentic 3D Isometric Studio Card (Hero / Intro scene when no other visual block is present) */}
-        {!hasComparison && !hasMetric && !hasCode && !hasPoints && !hasCta && (!scene.badges || scene.badges.length === 0) && (
+        {!hasComparison && !hasMetric && !hasCode && !hasPoints && !hasCta && !hasChartData && (!scene.badges || scene.badges.length === 0) && (
           <Isometric3DStudioCard theme={theme} frame={frame} fps={fps} />
         )}
       </div>
@@ -921,12 +1511,26 @@ const SceneRenderer: React.FC<{
 // ============================================================================
 export const MainVideo: React.FC<VideoProps> = ({
   composition = defaultVideoProps.composition,
+  vibe = 'ramai',
+  theme: customTheme,
   style = 'pi-v2-dark',
   audioUrl,
+  // V2 props
+  transition = 'auto',
+  transitionDurationFrames = 15,
+  textAnimMode = 'auto',
+  kineticShapes,
+  audioVisualizer,
 }) => {
   const frame = useCurrentFrame();
   const { fps, width, height, durationInFrames } = useVideoConfig();
-  const theme = THEMES[style] || THEMES['pi-v2-dark'];
+  const theme = resolveVibeTheme(vibe as string, customTheme, style);
+  const vibeId = ((['ramai', 'eksklusif', 'cyber', 'corporate'].includes(String(vibe))) ? vibe : 'ramai') as VibePresetId;
+
+  // Resolve text animation mode
+  const resolvedTextMode: TextAnimMode = textAnimMode === 'auto'
+    ? (VIBE_TEXT_AUTO[vibeId] || 'word-spring')
+    : textAnimMode;
 
   // Smooth continuous camera drift
   const camZoom = 1.0 + Math.sin(frame * 0.02) * 0.015;
@@ -937,6 +1541,9 @@ export const MainVideo: React.FC<VideoProps> = ({
   const totalProgress = Math.min(1, frame / durationInFrames);
   const scenes = composition?.scenes || defaultVideoProps.composition.scenes;
 
+  // Determine if transitions are used
+  const useTransitions = transition !== 'none' && scenes.length > 1;
+
   return (
     <div
       style={{
@@ -945,12 +1552,56 @@ export const MainVideo: React.FC<VideoProps> = ({
         position: 'relative',
         overflow: 'hidden',
         fontFamily: theme.font,
-        background: `radial-gradient(circle at 50% 35%, ${theme.bg[0]} 0%, ${theme.bg[1]} 65%, ${theme.bg[2]} 100%)`,
+        background: `radial-gradient(circle at 50% 35%, ${theme.colors.bgGradient[0]} 0%, ${theme.colors.bgGradient[1]} 65%, ${theme.colors.bgGradient[2]} 100%)`,
         color: theme.text,
       }}
     >
+      {/* Ambient Aura Glow */}
+      {theme.ambience.showAuraGlow && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '25%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 750,
+            height: 750,
+            borderRadius: '50%',
+            background: `radial-gradient(circle, ${theme.colors.accentGlow} 0%, transparent 70%)`,
+            filter: `blur(${theme.ambience.glassBlurPx * 3}px)`,
+            pointerEvents: 'none',
+            zIndex: 1,
+            opacity: 0.55,
+          }}
+        />
+      )}
+
       {/* Ambient 3D perspective floor grid */}
-      <Perspective3DGrid theme={theme} />
+      {theme.ambience.show3DGrid && <Perspective3DGrid theme={theme} />}
+
+      {/* V2: Kinetic Shapes Layer */}
+      {kineticShapes?.enabled && kineticShapes.shapes.length > 0 && (
+        <KineticShapesLayer
+          shapes={kineticShapes.shapes}
+          density={kineticShapes.density || 3}
+          theme={theme}
+        />
+      )}
+
+      {/* Cyber Scanlines Overlay */}
+      {theme.ambience.showScanlines && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 1,
+            background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%)',
+            backgroundSize: '100% 4px',
+            opacity: 0.4,
+          }}
+        />
+      )}
 
       {/* Camera drift container */}
       <div
@@ -985,49 +1636,50 @@ export const MainVideo: React.FC<VideoProps> = ({
             }}
           />
         </div>
-
-        {/* Bottom Audio Frequency Visualizer */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 40,
-            left: 50,
-            right: 50,
-            height: 30,
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'space-between',
-            gap: 4,
-            opacity: 0.6,
-          }}
-        >
-          {Array.from({ length: 32 }).map((_, i) => {
-            const h = Math.abs(Math.sin(frame * 0.12 + i * 0.35) * 22) + 4;
-            return (
-              <div
-                key={i}
-                style={{
-                  flex: 1,
-                  height: h,
-                  backgroundColor: i % 2 === 0 ? theme.accent : theme.accent2,
-                  borderRadius: 4,
-                }}
-              />
-            );
-          })}
-        </div>
       </div>
 
-      {/* Render All User Scenes Sequentially */}
-      {scenes.map((sc, idx) => {
-        const from = sc.startFrame;
-        const duration = Math.max(1, sc.endFrame - sc.startFrame);
-        return (
-          <Sequence key={idx} from={from} durationInFrames={duration}>
-            <SceneRenderer scene={sc} theme={theme} width={width} height={height} fps={fps} />
-          </Sequence>
-        );
-      })}
+      {/* V2: Audio Visualizer (replaces old hard-coded bars) */}
+      <AudioFrequencyViz
+        vizStyle={audioVisualizer?.enabled ? (audioVisualizer.style || 'frequency-bars') : 'frequency-bars'}
+        theme={theme}
+        numberOfSamples={audioVisualizer?.numberOfSamples || 32}
+        opacity={audioVisualizer?.opacity ?? 0.6}
+      />
+
+      {/* Render Scenes: TransitionSeries (V2) or plain Sequence (V1 fallback) */}
+      {useTransitions ? (
+        <TransitionSeries>
+          {scenes.map((sc, idx) => {
+            const duration = Math.max(1, sc.endFrame - sc.startFrame);
+            const presentation = getTransitionPresentation(transition as TransitionType, vibeId, idx, width, height);
+            return (
+              <React.Fragment key={idx}>
+                <TransitionSeries.Sequence durationInFrames={duration}>
+                  <AbsoluteFill>
+                    <SceneRenderer scene={sc} theme={theme} width={width} height={height} fps={fps} />
+                  </AbsoluteFill>
+                </TransitionSeries.Sequence>
+                {idx < scenes.length - 1 && presentation && (
+                  <TransitionSeries.Transition
+                    presentation={presentation}
+                    timing={linearTiming({ durationInFrames: transitionDurationFrames })}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </TransitionSeries>
+      ) : (
+        scenes.map((sc, idx) => {
+          const from = sc.startFrame;
+          const duration = Math.max(1, sc.endFrame - sc.startFrame);
+          return (
+            <Sequence key={idx} from={from} durationInFrames={duration}>
+              <SceneRenderer scene={sc} theme={theme} width={width} height={height} fps={fps} />
+            </Sequence>
+          );
+        })
+      )}
 
       {/* Optional Audio Track */}
       {audioUrl ? <Audio src={audioUrl} /> : null}

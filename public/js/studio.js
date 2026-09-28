@@ -348,6 +348,9 @@
               width: videoConfig.width,
               height: videoConfig.height,
             },
+            vibe: currentVibe,
+            persona: selectedPersona,
+            activeVisualElements: Array.from(activeVisualElements),
             style: effectiveComposition.style || selectedStyle
           })
         });
@@ -949,6 +952,78 @@
       }
     };
 
+    let currentVibe = 'ramai';
+    const VIBE_CONFIGS = {
+      ramai: {
+        id: 'ramai',
+        name: '🔥 Ramai & Viral',
+        tag: 'High Energy, Bouncy Spring & Punchy Beats',
+        recommendedElements: ['intro-hook', 'doodle', 'comparison', 'metric', 'points', 'cta'],
+        style: 'sunset-creator'
+      },
+      eksklusif: {
+        id: 'eksklusif',
+        name: '✨ Eksklusif & Luxury',
+        tag: 'Editorial Glassmorphism, Silky Damped Motion & Ambient Jazz',
+        recommendedElements: ['doodle', 'points', 'cta'],
+        style: 'mono-editorial'
+      },
+      cyber: {
+        id: 'cyber',
+        name: '💻 Cyber Tech',
+        tag: 'Terminal IDE, Matrix Grid & Electronic Synthwave',
+        recommendedElements: ['intro-hook', 'code', 'points', 'metric', 'cta'],
+        style: 'tech-neon-soft'
+      },
+      corporate: {
+        id: 'corporate',
+        name: '📊 Corporate Data',
+        tag: 'Clean Slate, Metric Shockwaves & Modern Tech Chime',
+        recommendedElements: ['intro-hook', 'comparison', 'metric', 'points', 'cta'],
+        style: 'pi-v2-dark'
+      }
+    };
+
+    function selectVibe(key) {
+      if (!VIBE_CONFIGS[key]) return;
+      currentVibe = key;
+      window.currentVibe = key;
+      const cfg = VIBE_CONFIGS[key];
+
+      ['ramai', 'eksklusif', 'cyber', 'corporate'].forEach(id => {
+        const el = document.getElementById(`vibe-${id}`);
+        if (!el) return;
+        if (id === key) {
+          el.className = 'vibe-card p-2 rounded-lg border border-amber-500/80 bg-zinc-800 text-white cursor-pointer transition flex items-center gap-2 shadow-xs';
+          const t = el.querySelector('.text-\\[11px\\]');
+          if (t) t.className = 'text-[11px] font-bold text-white truncate';
+        } else {
+          el.className = 'vibe-card p-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:border-zinc-700 cursor-pointer transition flex items-center gap-2 text-zinc-300';
+          const t = el.querySelector('.text-\\[11px\\]');
+          if (t) t.className = 'text-[11px] font-bold text-zinc-200 truncate';
+        }
+      });
+
+      const badge = document.getElementById('selectedVibeBadge');
+      if (badge) badge.textContent = cfg.name;
+
+      // Auto-toggle recommended elements
+      activeVisualElements.clear();
+      cfg.recommendedElements.forEach(e => activeVisualElements.add(e));
+      updateVisualElementsUI();
+
+      if (typeof selectPreset === 'function') {
+        selectPreset(cfg.style);
+      }
+
+      // Trigger instant canvas frame redraw with new vibe styling
+      if (typeof window.drawFrame === 'function') {
+        window.drawFrame(typeof currentFrame !== 'undefined' ? currentFrame : 0);
+      }
+
+      updateMasterPromptPreview();
+    }
+
     let selectedPersona = 'creator-story';
 
     function selectPersona(key) {
@@ -994,6 +1069,7 @@
       const rawInput = (document.getElementById('promptInput')?.value || '').trim();
       const scriptContent = rawInput || '[MASUKKAN TOPIK ATAU OUTLINE VIDEO DI SINI]';
       const cfg = PERSONA_CONFIGS[selectedPersona] || PERSONA_CONFIGS['creator-story'];
+      const vibeCfg = VIBE_CONFIGS[currentVibe] || VIBE_CONFIGS['ramai'];
       const plat = typeof selectedPlatform !== 'undefined' ? selectedPlatform : '9:16';
       const durationSec = typeof selectedSec !== 'undefined' ? selectedSec : 60;
       const targetFrames = durationSec * 30;
@@ -1001,6 +1077,7 @@
       const activeList = Array.from(activeVisualElements);
       const fewShotJson = JSON.stringify({
         title: `Video ${cfg.name}: ${scriptContent.slice(0, 30)}...`,
+        vibe: currentVibe,
         style: cfg.style,
         fps: 30,
         scenes: cfg.fewShotScenes
@@ -1014,6 +1091,7 @@ Tugasmu adalah merancang file JSON animasi \`composition.json\` berenergi tinggi
 """
 ${scriptContent}
 """
+- SUASANA VIDEO (VIBE): "${vibeCfg.name}" (${vibeCfg.tag})
 - PERSONA TEMPLATE: "${cfg.name}"
 - TONE & STYLE KOMUNIKASI: ${cfg.tone}
 - VISUAL PRESET STYLE: "${cfg.style}"
@@ -1224,6 +1302,8 @@ ${fewShotJson}`;
     });
 
     // Expose pipeline functions to window for DOM onclick attributes
+    window.selectVibe = selectVibe;
+    window.currentVibe = currentVibe;
     window.selectPersona = selectPersona;
     window.toggleVisualElement = toggleVisualElement;
     window.updateVisualElementsUI = updateVisualElementsUI;

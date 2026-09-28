@@ -426,8 +426,23 @@ async function getRemotionBundle() {
 
 // OFFICIAL REMOTION RENDER ENGINE (With Procedural Music & SFX Synchronization)
 app.post('/api/render-edu-video', async (req, res) => {
-  const { composition: rawComposition, style = 'pi-v2-dark' } = req.body;
+  const {
+    composition: rawComposition,
+    style = 'pi-v2-dark',
+    vibe = 'ramai',
+    persona = 'creator',
+    activeVisualElements = []
+  } = req.body;
   if (!rawComposition || !rawComposition.scenes) return res.status(400).json({ error: 'Composition data is required' });
+
+  // Resolve authoritative Vibe tokens
+  let vibeTokens;
+  try {
+    const { getVibePreset } = await import('./lib/vibe-tokens.mjs');
+    vibeTokens = getVibePreset(vibe);
+  } catch (e) {
+    vibeTokens = { id: 'ramai', audio: { musicPreset: 'tech-bright', targetBpm: 120, sfxPack: 'digital-soft', sfxGainMultiplier: 1.5 } };
+  }
 
   // Normalize: resolve startFrame/endFrame from durationFrames if needed
   function normalizeComposition(comp, defaultFps = 30) {
@@ -452,7 +467,6 @@ app.post('/api/render-edu-video', async (req, res) => {
   const width = composition.width || 1080;
   const height = composition.height || 1920;
 
-
   const rendersDir = path.join(__dirname, 'renders');
   if (!fs.existsSync(rendersDir)) fs.mkdirSync(rendersDir, { recursive: true });
 
@@ -461,26 +475,28 @@ app.post('/api/render-edu-video', async (req, res) => {
   const outputFile = path.join(rendersDir, filename);
   const audioFile = path.join(rendersDir, `audio_${timestamp}.wav`);
 
-  // Synthesize procedural MotionCraft audio + High-Fidelity Punchy SFX
+  // Synthesize procedural MotionCraft audio + High-Fidelity Punchy SFX tailored to Vibe
   let hasAudio = false;
   try {
     const M = await import('./lib/music.mjs');
     const D = await import('./lib/dsp.mjs');
     const S = await import('./lib/sfx.mjs');
-    const preset = STYLE_TO_MUSIC[style] || 'calm-punch';
-    const spec = M.resolveSpec({ preset, duration: durationSec });
+
+    const preset = vibeTokens.audio?.musicPreset || STYLE_TO_MUSIC[style] || 'tech-bright';
+    const targetBpm = vibeTokens.audio?.targetBpm || 116;
+    const spec = M.resolveSpec({ preset, bpm: targetBpm, duration: durationSec });
     const r = M.renderMusic(spec);
 
     // Generate comprehensive auto-cues for every scene transition, code typing, buttons, and logos
     const cues = S.generateAutoSfxCues(composition, fps);
     const sfxRes = S.renderSfx(cues, durationSec, {
-      bpm: spec.bpm || 112,
-      pack: style === 'mono-editorial' ? 'paper' : 'digital-soft',
+      bpm: spec.bpm || targetBpm,
+      pack: vibeTokens.audio?.sfxPack || (style === 'mono-editorial' ? 'paper' : 'digital-soft'),
       density: 1.0,
     });
 
-    // Layer punchy SFX (+3.5 dB gain) into the background instrumental mix
-    D.mixInto(r.mix, sfxRes.buf, 1.5);
+    // Layer punchy SFX into the background instrumental mix
+    D.mixInto(r.mix, sfxRes.buf, vibeTokens.audio?.sfxGainMultiplier || 1.5);
 
     // Master full mix to streaming standards (-14 LUFS, -1 dB True Peak)
     const m = D.master(r.mix, -14, -1);
@@ -498,6 +514,10 @@ app.post('/api/render-edu-video', async (req, res) => {
 
     const inputProps = {
       composition,
+      vibe: vibeTokens.id,
+      theme: vibeTokens,
+      persona,
+      activeVisualElements,
       style,
       durationSec,
       width,

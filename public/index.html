@@ -144,14 +144,72 @@
         </div>
 
         <!-- ======================================================== -->
-        <!-- LANGKAH 2: PERSONA TEMPLATE & FORMAT                     -->
+        <!-- LANGKAH 2: SUASANA & PERSONA TEMPLATE                   -->
         <!-- ======================================================== -->
         <div class="p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-800/80 space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <span class="w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-white font-mono text-[10px] font-bold flex items-center justify-center">2</span>
-              <label class="text-[11px] font-bold text-white uppercase tracking-wider">Persona Template & Format</label>
+          
+          <!-- SUASANA VIDEO PRESET SELECTOR (VIBE & ATMOSPHERE) -->
+          <div class="space-y-1.5 pb-2.5 border-b border-zinc-800/80">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-zinc-800 border border-zinc-700 text-white font-mono text-[10px] font-bold flex items-center justify-center">2</span>
+                <span class="text-[11px] text-white font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <i class="fa-solid fa-clapperboard text-amber-400 text-[10px]"></i>
+                  Suasana Video (Vibe):
+                </span>
+              </div>
+              <span id="selectedVibeBadge" class="text-[9px] font-mono text-amber-300 bg-amber-950/60 border border-amber-800/40 px-2 py-0.5 rounded font-bold">🔥 Ramai & Viral</span>
             </div>
+            
+            <div class="grid grid-cols-2 gap-1.5">
+              <!-- Vibe 1: Ramai & Viral (Default Active) -->
+              <div onclick="selectVibe('ramai')" id="vibe-ramai" class="vibe-card p-2 rounded-lg border border-amber-500/80 bg-zinc-800 text-white cursor-pointer transition flex items-center gap-2 shadow-xs">
+                <div class="w-7 h-7 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center shrink-0 text-xs">
+                  <i class="fa-solid fa-fire"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[11px] font-bold text-white truncate">Ramai & Viral</div>
+                  <div class="text-[8px] text-zinc-300 truncate">Punchy spring, 3D grid, SFX beat</div>
+                </div>
+              </div>
+
+              <!-- Vibe 2: Eksklusif & Minimalis -->
+              <div onclick="selectVibe('eksklusif')" id="vibe-eksklusif" class="vibe-card p-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:border-zinc-700 cursor-pointer transition flex items-center gap-2 text-zinc-300">
+                <div class="w-7 h-7 rounded-md bg-slate-500/20 border border-slate-500/40 text-slate-300 flex items-center justify-center shrink-0 text-xs">
+                  <i class="fa-solid fa-gem"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[11px] font-bold text-zinc-200 truncate">Eksklusif & Luxury</div>
+                  <div class="text-[8px] text-zinc-400 truncate">Glass aura blur, silky motion</div>
+                </div>
+              </div>
+
+              <!-- Vibe 3: Cyber Tech -->
+              <div onclick="selectVibe('cyber')" id="vibe-cyber" class="vibe-card p-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:border-zinc-700 cursor-pointer transition flex items-center gap-2 text-zinc-300">
+                <div class="w-7 h-7 rounded-md bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center shrink-0 text-xs">
+                  <i class="fa-solid fa-terminal"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[11px] font-bold text-zinc-200 truncate">Cyber Tech</div>
+                  <div class="text-[8px] text-zinc-400 truncate">Terminal IDE, matrix grid, neon</div>
+                </div>
+              </div>
+
+              <!-- Vibe 4: Clean Corporate -->
+              <div onclick="selectVibe('corporate')" id="vibe-corporate" class="vibe-card p-2 rounded-lg border border-zinc-800 bg-zinc-900/60 hover:border-zinc-700 cursor-pointer transition flex items-center gap-2 text-zinc-300">
+                <div class="w-7 h-7 rounded-md bg-blue-500/20 border border-blue-500/40 text-blue-400 flex items-center justify-center shrink-0 text-xs">
+                  <i class="fa-solid fa-chart-simple"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="text-[11px] font-bold text-zinc-200 truncate">Corporate Data</div>
+                  <div class="text-[8px] text-zinc-400 truncate">Modern slate, counter %, clean</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-0.5">
+            <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Persona Skrip & Format:</label>
             <span class="text-[10px] text-zinc-500 font-mono" id="selectedPersonaBadge">Content Creator</span>
           </div>
 

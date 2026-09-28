@@ -62,3 +62,16 @@ button:active, .interactive-btn:active {
   transform: translateX(-4px) rotate(45deg);
   border-radius: 1px;
 }
+
+/* Vibe Card Micro-interactions */
+.vibe-card {
+  transition: transform 140ms var(--ease-out), border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.vibe-card:hover {
+  transform: translateY(-1px);
+}
+
+.vibe-card:active {
+  transform: scale(0.98);
+}

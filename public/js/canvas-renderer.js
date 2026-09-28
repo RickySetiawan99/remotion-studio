@@ -880,7 +880,41 @@
       const width = canvas.width;
       const height = canvas.height;
 
-      const st = STYLE_PRESETS[selectedStyle] || STYLE_PRESETS['pi-v2-dark'];
+      const baseSt = STYLE_PRESETS[selectedStyle] || STYLE_PRESETS['pi-v2-dark'];
+      
+      // Resolve Vibe Presets dynamically from Studio state
+      const activeVibeKey = window.currentVibe || 'ramai';
+      let vibeBg = baseSt.bg;
+      let vibeAccent = baseSt.accent;
+      let vibeGlow = baseSt.accentGlow;
+      let show3DGrid = true;
+      let showScanlines = false;
+
+      if (activeVibeKey === 'ramai') {
+        vibeBg = ['#3b1704', '#180d05', '#050201'];
+        vibeAccent = '#f59e0b';
+        vibeGlow = 'rgba(245, 158, 11, 0.45)';
+        show3DGrid = true;
+      } else if (activeVibeKey === 'eksklusif') {
+        vibeBg = ['#111827', '#080d1a', '#03060d'];
+        vibeAccent = '#f8fafc';
+        vibeGlow = 'rgba(248, 250, 252, 0.25)';
+        show3DGrid = false;
+      } else if (activeVibeKey === 'cyber') {
+        vibeBg = ['#042f2e', '#051923', '#01090f'];
+        vibeAccent = '#06b6d4';
+        vibeGlow = 'rgba(6, 182, 212, 0.40)';
+        show3DGrid = true;
+        showScanlines = true;
+      } else if (activeVibeKey === 'corporate') {
+        vibeBg = ['#1e1b4b', '#0f172a', '#030712'];
+        vibeAccent = '#3b82f6';
+        vibeGlow = 'rgba(59, 130, 246, 0.35)';
+        show3DGrid = false;
+      }
+
+      const st = { ...baseSt, bg: vibeBg, accent: vibeAccent, accentGlow: vibeGlow };
+
       ctx.save();
 
       // Camera Drift
@@ -902,6 +936,26 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
 
+      // Ambient Aura Glow (especially prominent in Eksklusif mode)
+      ctx.save();
+      const auraGrad = ctx.createRadialGradient(width / 2, height * 0.3, 20, width / 2, height * 0.3, width * 0.55);
+      auraGrad.addColorStop(0, st.accentGlow);
+      auraGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = auraGrad;
+      ctx.globalAlpha = 0.5;
+      ctx.fillRect(0, 0, width, height);
+      ctx.restore();
+
+      // Cyber Scanlines Overlay
+      if (showScanlines) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+        for (let y = 0; y < height; y += 4) {
+          ctx.fillRect(0, y, width, 1.5);
+        }
+        ctx.restore();
+      }
+
       // Particle Stars
       ctx.fillStyle = 'rgba(255,255,255,0.2)';
       for (let p = 0; p < 25; p++) {
@@ -911,8 +965,10 @@
         ctx.beginPath(); ctx.arc(px, py, pSize, 0, Math.PI * 2); ctx.fill();
       }
 
-      // High-Taste 3D Perspective Horizon Grid (replaces tacky unicode clutter)
-      drawPerspectiveHorizonGrid(ctx, width, height, frame, st);
+      // High-Taste 3D Perspective Horizon Grid (rendered when show3DGrid is active)
+      if (show3DGrid) {
+        drawPerspectiveHorizonGrid(ctx, width, height, frame, st);
+      }
 
       // Top Progress Capsule
       const totalProgress = Math.min(1, frame / videoConfig.durationInFrames);
@@ -1263,3 +1319,7 @@
       const fc = document.getElementById('frameCounterText');
       if (fc) fc.innerText = `(F${frame} / ${videoConfig.durationInFrames})`;
     }
+
+    // Expose drawFrame globally for studio interactions
+    window.drawFrame = drawFrame;
+    window.renderRealtimeFrame = drawFrame;
