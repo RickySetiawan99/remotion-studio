@@ -58,6 +58,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/3d', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', '3d.html'));
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/renders', express.static(path.join(__dirname, 'renders')));
@@ -82,13 +86,13 @@ setInterval(() => {
 }, 30 * 60 * 1000);
 
 // ASSET UPLOAD ENDPOINT — POST /api/upload-asset
-// Accepts: .png, .jpg, .jpeg, .webp, .gif, .mp3, .wav (max 50MB)
+// Accepts: .png, .jpg, .jpeg, .webp, .gif, .mp3, .wav, .glb, .gltf (max 50MB)
 // Returns: { success: true, url: '/uploads/<filename>', filename, size }
 app.post('/api/upload-asset', (req, res) => {
   const uploadsDir = path.join(__dirname, 'public', 'uploads');
   if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
-  const ALLOWED_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp3', '.wav']);
+  const ALLOWED_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.mp3', '.wav', '.glb', '.gltf']);
   const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 
   let bb;
@@ -608,6 +612,167 @@ app.post('/api/render-edu-video', async (req, res) => {
   }
 });
 
+// ============================================================================
+// OFFICIAL REMOTION 3D RENDER ENGINE (WebGL Headless + Procedural Audio Sync)
+// ============================================================================
+app.post('/api/render-3d-video', async (req, res) => {
+  const {
+    modelType = 'smartphone',
+    customGlbUrl,
+    motionType = 'spin',
+    motionSpeed = 1,
+    lightingPreset = 'cyber',
+    material = { color: '#06b6d4', metalness: 0.85, roughness: 0.2, wireframe: false },
+    textOverlay = {
+      badge: '3D SHOWCASE',
+      headline: 'Visualisasi 3D *Masa Depan*',
+      subtext: 'Engine video motion 3D berbasis WebGL, Three.js & Remotion.',
+      ctaText: 'Explore 3D Studio',
+    },
+    durationSec = 5,
+    aspectRatio = 'portrait',
+    audioPreset = 'tech-bright',
+  } = req.body;
+
+  const ASPECT_DIMS = {
+    portrait: { width: 1080, height: 1920 },
+    landscape: { width: 1920, height: 1080 },
+    square: { width: 1080, height: 1080 },
+  };
+
+  const dims = ASPECT_DIMS[aspectRatio] || ASPECT_DIMS.portrait;
+  const width = dims.width;
+  const height = dims.height;
+  const fps = 30;
+  const totalFrames = Math.round(Number(durationSec || 5) * fps);
+
+  const rendersDir = path.join(__dirname, 'renders');
+  if (!fs.existsSync(rendersDir)) fs.mkdirSync(rendersDir, { recursive: true });
+
+  const timestamp = Date.now();
+  const filename = `remotion_3d_${timestamp}.mp4`;
+  const outputFile = path.join(rendersDir, filename);
+  const audioFile = path.join(rendersDir, `audio_3d_${timestamp}.wav`);
+
+  // Synthesize procedural background music for 3D showcase
+  let hasAudio = false;
+  try {
+    const M = await import('./lib/music.mjs');
+    const D = await import('./lib/dsp.mjs');
+    const spec = M.resolveSpec({ preset: audioPreset || 'tech-bright', bpm: 120, duration: Number(durationSec || 5) });
+    const r = M.renderMusic(spec);
+    const m = D.master(r.mix, -14, -1);
+    D.writeWav(audioFile, m.buf, 16, fs);
+    hasAudio = true;
+  } catch (audioErr) {
+    console.warn("[3D Audio Warning]:", audioErr.message);
+  }
+
+  let tempVideoFile = hasAudio ? path.join(rendersDir, `temp_3d_video_${timestamp}.mp4`) : outputFile;
+
+  try {
+    const { selectComposition, renderMedia } = await import('@remotion/renderer');
+    const bundleLocation = await getRemotionBundle();
+
+    const inputProps = {
+      modelType,
+      customGlbUrl,
+      motionType,
+      motionSpeed: Number(motionSpeed) || 1,
+      lightingPreset,
+      material,
+      textOverlay,
+      durationSec: Number(durationSec) || 5,
+      aspectRatio,
+      audioPreset,
+    };
+
+    const chromiumArgs = [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--enable-webgl',
+      '--enable-accelerated-2d-canvas',
+      '--ignore-gpu-blocklist',
+      '--use-gl=angle',
+    ];
+
+    const comp = await selectComposition({
+      serveUrl: bundleLocation,
+      id: 'MotionCraft3D',
+      inputProps,
+      chromiumOptions: {
+        enableMultiProcessOnLinux: true,
+        args: chromiumArgs,
+      },
+    });
+
+    console.log(`[3D Render] Starting 3D render: "${textOverlay?.headline || modelType}" (${totalFrames} frames @ ${fps}fps, ${width}x${height}, model: ${modelType})`);
+
+    await renderMedia({
+      composition: comp,
+      serveUrl: bundleLocation,
+      codec: 'h264',
+      outputLocation: tempVideoFile,
+      inputProps,
+      concurrency: process.env.RENDER_CONCURRENCY ? parseInt(process.env.RENDER_CONCURRENCY, 10) : 1,
+      timeoutInMilliseconds: 300000,
+      chromiumOptions: {
+        enableMultiProcessOnLinux: true,
+        args: chromiumArgs,
+      },
+      onProgress: ({ progress, renderedFrames }) => {
+        if (renderedFrames % 30 === 0 || progress === 1) {
+          console.log(`[3D Render Progress] ${(progress * 100).toFixed(1)}% | Frame ${renderedFrames}/${totalFrames}`);
+        }
+      },
+    });
+
+    if (hasAudio && fs.existsSync(audioFile)) {
+      // Fast mux audio + video without re-encoding video (-c:v copy)
+      await new Promise((resolve, reject) => {
+        const ff = spawn('ffmpeg', [
+          '-y',
+          '-i', tempVideoFile,
+          '-i', audioFile,
+          '-c:v', 'copy',
+          '-c:a', 'aac',
+          '-b:a', '192k',
+          '-shortest',
+          '-movflags', '+faststart',
+          outputFile,
+        ]);
+        ff.on('close', code => {
+          if (code === 0) resolve();
+          else reject(new Error(`FFmpeg 3D mux failed with exit code ${code}`));
+        });
+        ff.on('error', reject);
+      });
+    }
+
+    const stat = fs.statSync(outputFile);
+    console.log(`[3D Render Success] ${filename} (${(stat.size / (1024 * 1024)).toFixed(2)} MB)`);
+
+    res.json({
+      success: true,
+      filename,
+      url: `/renders/${filename}`,
+      sizeMB: (stat.size / (1024 * 1024)).toFixed(2),
+    });
+  } catch (err) {
+    console.error("[3D Render Error]:", err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    if (hasAudio && tempVideoFile !== outputFile && fs.existsSync(tempVideoFile)) {
+      try { fs.unlinkSync(tempVideoFile); } catch (e) {}
+    }
+    if (fs.existsSync(audioFile)) {
+      try { fs.unlinkSync(audioFile); } catch (e) {}
+    }
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Remotion Studio running on port ${PORT}`);
 });
+
