@@ -46,13 +46,13 @@ remotion_studio/
 **Interfaces:**
 - Produces: Installed packages `three`, `@types/three`, `@react-three/fiber`, `@remotion/three`.
 
-- [ ] **Step 1: Install Three.js and Remotion Three packages**
+- [x] **Step 1: Install Three.js and Remotion Three packages**
   Run `npm install three@^0.174.0 @types/three@^0.174.0 @react-three/fiber@^8.18.0 @remotion/three@^4.0.529`.
 
-- [ ] **Step 2: Verify package installation**
+- [x] **Step 2: Verify package installation**
   Check that `node_modules/@remotion/three` and `node_modules/three` exist and `npm list three @remotion/three` succeeds.
 
-- [ ] **Step 3: Commit dependency changes**
+- [x] **Step 3: Commit dependency changes**
   `git add package.json package-lock.json && git commit -m "chore(deps): install three, @react-three/fiber, and @remotion/three"`
 
 ---
@@ -66,7 +66,7 @@ remotion_studio/
 **Interfaces:**
 - Produces: `ThreeDMainVideo`, `defaultThreeDProps`, `ThreeDVideoProps`, and `MotionCraft3D` composition.
 
-- [ ] **Step 1: Create `src/ThreeDComposition.tsx`**
+- [x] **Step 1: Create `src/ThreeDComposition.tsx`**
   Implement the 3D composition with:
   1. `ThreeDVideoProps` interface with models (`smartphone`, `coin`, `box`, `geometric`), motion types (`spin`, `float`, `orbit`, `spring-pop`), lighting presets (`cyber`, `luxury`, `obsidian`, `clean`), material configs, and text overlay.
   2. `<ThreeCanvas>` wrapped with `useVideoConfig()` dimensions and camera position.
@@ -78,13 +78,13 @@ remotion_studio/
      - `geometric`: TorusKnot with wireframe & core glow.
   5. 2D text overlay layer (`ThreeDOverlay`) with animated headline, badge, and CTA button.
 
-- [ ] **Step 2: Register `MotionCraft3D` in `src/Root.tsx`**
+- [x] **Step 2: Register `MotionCraft3D` in `src/Root.tsx`**
   Import `ThreeDMainVideo` and `defaultThreeDProps`, register `<Composition id="MotionCraft3D" ... calculateMetadata={...} />`.
 
-- [ ] **Step 3: Type check**
+- [x] **Step 3: Type check**
   Run `npx tsc --noEmit` and confirm 0 errors.
 
-- [ ] **Step 4: Commit 3D composition**
+- [x] **Step 4: Commit 3D composition**
   `git add src/ThreeDComposition.tsx src/Root.tsx && git commit -m "feat(3d): implement MotionCraft3D Remotion composition with Three.js"`
 
 ---
@@ -97,10 +97,10 @@ remotion_studio/
 **Interfaces:**
 - Produces: `GET /3d` route serving `public/3d.html` and `POST /api/render-3d-video` endpoint.
 
-- [ ] **Step 1: Add `GET /3d` route**
+- [x] **Step 1: Add `GET /3d` route**
   In `server.js`, add `app.get('/3d', (req, res) => res.sendFile(path.join(__dirname, 'public', '3d.html')));`.
 
-- [ ] **Step 2: Add `POST /api/render-3d-video` endpoint**
+- [x] **Step 2: Add `POST /api/render-3d-video` endpoint**
   Implement render endpoint:
   1. Parse `ThreeDVideoProps` from `req.body`.
   2. Select composition `MotionCraft3D`.
@@ -109,10 +109,10 @@ remotion_studio/
   5. Call `renderMedia` with progress logging.
   6. FFmpeg mux video and audio, cleanup temporary files, return `{ success: true, filename, url, sizeMB }`.
 
-- [ ] **Step 3: Verify server syntax**
+- [x] **Step 3: Verify server syntax**
   Run `node -c server.js` to ensure no syntax errors.
 
-- [ ] **Step 4: Commit server updates**
+- [x] **Step 4: Commit server updates**
   `git add server.js && git commit -m "feat(server): add /3d route and POST /api/render-3d-video endpoint"`
 
 ---
@@ -126,7 +126,7 @@ remotion_studio/
 **Interfaces:**
 - Produces: Standalone 3D studio with interactive Three.js OrbitControls canvas, workbench sidebar, and render execution.
 
-- [ ] **Step 1: Create `public/3d.html`**
+- [x] **Step 1: Create `public/3d.html`**
   Create full responsive HTML matching the dark luxury UI:
   1. Top navbar with Studio Switcher pill `[ 🎬 2D Video Studio | 🧊 3D Animation Studio ]`.
   2. Left sidebar workbench with 4 tabs:
@@ -136,7 +136,7 @@ remotion_studio/
      - Overlay: Headline text, Badge, CTA text, Aspect ratio, Duration (5s, 10s, 15s).
   3. Right viewport with WebGL container, playback controls, and Render button.
 
-- [ ] **Step 2: Create `public/js/3d-studio.js`**
+- [x] **Step 2: Create `public/js/3d-studio.js`**
   Implement interactive Three.js client viewer:
   1. Three.js Scene, PerspectiveCamera, WebGLRenderer, OrbitControls.
   2. Real-time mesh generation matching selected preset (Phone, Coin, Box, Geometric).
@@ -144,7 +144,7 @@ remotion_studio/
   4. Animation loop reflecting motion speed and type.
   5. `render3DVideo()` function dispatching payload to `/api/render-3d-video` with progress feedback.
 
-- [ ] **Step 3: Commit 3D studio UI**
+- [x] **Step 3: Commit 3D studio UI**
   `git add public/3d.html public/js/3d-studio.js && git commit -m "feat(ui): create dedicated 3D Studio page and interactive Three.js viewport"`
 
 ---
@@ -157,15 +157,15 @@ remotion_studio/
 **Interfaces:**
 - Produces: Seamless 1-click navigation between 2D Studio (`/`) and 3D Studio (`/3d`).
 
-- [ ] **Step 1: Update header in `public/index.html`**
+- [x] **Step 1: Update header in `public/index.html`**
   Replace or augment the top header branding with the dual-studio segmented pill switcher:
   - Button 1: `🎬 2D Video Studio` (active highlight)
   - Button 2: `🧊 3D Animation Studio` (links to `/3d`)
 
-- [ ] **Step 2: Verify navigation flow**
+- [x] **Step 2: Verify navigation flow**
   Confirm clicking `🧊 3D Animation Studio` loads `/3d`, and clicking `🎬 2D Video Studio` returns to `/`.
 
-- [ ] **Step 3: Commit header update**
+- [x] **Step 3: Commit header update**
   `git add public/index.html && git commit -m "feat(nav): add dual-studio switcher pill on 2D Studio header"`
 
 ---
@@ -178,22 +178,22 @@ remotion_studio/
 **Interfaces:**
 - Produces: Verified local 3D render, clean git working tree, synced VPS deployment on `nyobaai.my.id`.
 
-- [ ] **Step 1: Test TypeScript build**
+- [x] **Step 1: Test TypeScript build**
   Run `npx tsc --noEmit` and verify 0 errors.
 
-- [ ] **Step 2: Test local 3D render**
+- [x] **Step 2: Test local 3D render**
   Run a test node script executing `selectComposition({ id: 'MotionCraft3D' })` and `renderMedia` to generate a 5-second 3D MP4.
 
-- [ ] **Step 3: Push changes to GitHub `origin/master`**
+- [x] **Step 3: Push changes to GitHub `origin/master`**
   Ensure working tree is clean and `git push origin master` completes.
 
-- [ ] **Step 4: Pull and deploy to VPS Tencent (`vps-tencent`)**
+- [x] **Step 4: Pull and deploy to VPS Tencent (`vps-tencent`)**
   SSH into VPS:
   1. `cd /home/ubuntu/remotion-studio`
   2. `git pull origin master`
   3. `npm install`
   4. `pm2 restart remotion-studio`
 
-- [ ] **Step 5: Verify live deployment on `https://nyobaai.my.id/3d`**
+- [x] **Step 5: Verify live deployment on `https://nyobaai.my.id/3d`**
   Curl `https://nyobaai.my.id/3d` and verify HTTP 200 OK.
   Execute live smoke-test render via `curl -X POST https://nyobaai.my.id/api/render-3d-video`.
