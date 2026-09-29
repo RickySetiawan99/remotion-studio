@@ -14,12 +14,16 @@
       </div>
     </div>
 
-    <!-- Center: Active Composition Indicator (Desktop) -->
-    <div id="headerSceneIndicator" class="hidden md:flex items-center gap-2 h-8 px-3 rounded-md bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-400">
-      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-      <span id="headerCompTitle" class="text-zinc-200 font-medium max-w-[200px] lg:max-w-[260px] truncate">MotionCraft Studio</span>
-      <span class="text-zinc-600">/</span>
-      <span class="text-[11px] text-zinc-400 font-mono">Remotion 4.0</span>
+    <!-- Center: Dual-Studio Switcher Pill (Desktop) -->
+    <div class="hidden md:flex items-center bg-zinc-900/90 border border-zinc-800 p-0.5 rounded-lg shadow-inner">
+      <a href="/" class="h-7 px-3 rounded-md text-xs font-bold text-white bg-zinc-800 border border-zinc-700/60 shadow-xs flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-film text-[11px] text-amber-400"></i>
+        <span>2D Video Studio</span>
+      </a>
+      <a href="/3d" class="h-7 px-3 rounded-md text-xs font-semibold text-zinc-400 hover:text-zinc-200 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-cube text-[11px] text-cyan-400"></i>
+        <span>3D Animation Studio</span>
+      </a>
     </div>
 
     <!-- Center: Mobile Tab Switcher (Editor Naskah vs Video Preview) -->
