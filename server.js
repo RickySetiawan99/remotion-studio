@@ -687,27 +687,26 @@ app.post('/api/render-3d-video', async (req, res) => {
       audioPreset,
     };
 
-    const chromiumArgs = [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--enable-webgl',
-      '--enable-accelerated-2d-canvas',
-      '--ignore-gpu-blocklist',
-      '--use-gl=angle',
-    ];
+    const glRenderer = process.env.REMOTION_GL || (process.platform === 'linux' ? 'swangle' : 'angle');
+    const chromiumOptions = {
+      enableMultiProcessOnLinux: true,
+      gl: glRenderer,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--ignore-gpu-blocklist',
+      ],
+    };
 
     const comp = await selectComposition({
       serveUrl: bundleLocation,
       id: 'MotionCraft3D',
       inputProps,
-      chromiumOptions: {
-        enableMultiProcessOnLinux: true,
-        args: chromiumArgs,
-      },
+      chromiumOptions,
     });
 
-    console.log(`[3D Render] Starting 3D render: "${textOverlay?.headline || modelType}" (${totalFrames} frames @ ${fps}fps, ${width}x${height}, model: ${modelType})`);
+    console.log(`[3D Render] Starting 3D render: "${textOverlay?.headline || modelType}" (${totalFrames} frames @ ${fps}fps, ${width}x${height}, model: ${modelType}, gl: ${glRenderer})`);
 
     await renderMedia({
       composition: comp,
@@ -717,10 +716,7 @@ app.post('/api/render-3d-video', async (req, res) => {
       inputProps,
       concurrency: process.env.RENDER_CONCURRENCY ? parseInt(process.env.RENDER_CONCURRENCY, 10) : 1,
       timeoutInMilliseconds: 300000,
-      chromiumOptions: {
-        enableMultiProcessOnLinux: true,
-        args: chromiumArgs,
-      },
+      chromiumOptions,
       onProgress: ({ progress, renderedFrames }) => {
         if (renderedFrames % 30 === 0 || progress === 1) {
           console.log(`[3D Render Progress] ${(progress * 100).toFixed(1)}% | Frame ${renderedFrames}/${totalFrames}`);
