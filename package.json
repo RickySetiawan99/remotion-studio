@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
+    "dev": "node server.js",
     "remotion:studio": "remotion studio src/index.ts",
     "remotion:render": "remotion render src/index.ts MotionCraftVideo renders/cli_out.mp4",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,17 +14,21 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@react-three/fiber": "^8.18.0",
     "@remotion/bundler": "^4.0.529",
     "@remotion/cli": "^4.0.529",
     "@remotion/media-utils": "^4.0.529",
     "@remotion/renderer": "^4.0.529",
     "@remotion/shapes": "^4.0.529",
+    "@remotion/three": "^4.0.529",
     "@remotion/transitions": "^4.0.529",
+    "@types/three": "^0.174.0",
     "busboy": "^1.6.0",
     "express": "^5.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remotion": "^4.0.529"
+    "remotion": "^4.0.529",
+    "three": "^0.174.0"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",
