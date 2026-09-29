@@ -613,6 +613,191 @@ app.post('/api/render-edu-video', async (req, res) => {
 });
 
 // ============================================================================
+// AI 3D DIRECTOR (Prompt to 3D Scene Config Generator)
+// ============================================================================
+function generateDynamic3DConfig(promptText) {
+  const p = (promptText || '').toLowerCase();
+
+  let modelType = 'smartphone';
+  let lightingPreset = 'cyber';
+  let motionType = 'spin';
+  let motionSpeed = 1.0;
+  let color = '#06b6d4';
+  let metalness = 0.85;
+  let roughness = 0.2;
+  let audioPreset = 'tech-bright';
+  let badge = '3D SHOWCASE';
+  let headline = 'Inovasi 3D *Masa Depan*';
+  let subtext = 'Visualisasi produk 3D sinematik bertenaga Three.js & Remotion.';
+  let ctaText = 'Pelajari Lebih Lanjut';
+
+  const hasWord = (regex) => regex.test(p);
+
+  if (hasWord(/\b(hp|phone|smartphone|iphone|android|gadget|mobile|ponsel)\b/) || p.includes('smartphone') || p.includes('iphone') || p.includes('android')) {
+    modelType = 'smartphone';
+    lightingPreset = 'obsidian';
+    motionType = 'spin';
+    motionSpeed = 1.0;
+    color = '#10b981';
+    metalness = 0.88;
+    roughness = 0.18;
+    audioPreset = 'tech-bright';
+    badge = 'FLAGSHIP PRO';
+    headline = 'Performa Ekstrem *Tanpa Batas*';
+    subtext = 'Desain titanium ultra tipis dengan layar immersive 120Hz.';
+    ctaText = 'Pre-Order Sekarang';
+  } else if (p.includes('koin') || p.includes('coin') || p.includes('emas') || p.includes('gold') || p.includes('crypto') || p.includes('bitcoin') || p.includes('uang') || p.includes('fintech') || p.includes('invest') || p.includes('saham')) {
+    modelType = 'coin';
+    lightingPreset = 'luxury';
+    motionType = 'float';
+    motionSpeed = 1.1;
+    color = '#f59e0b';
+    metalness = 0.95;
+    roughness = 0.15;
+    audioPreset = 'tech-bright';
+    badge = 'CRYPTO ASSET';
+    headline = 'Investasi Aset *Digital Emas*';
+    subtext = 'Keamanan terdesentralisasi dan likuiditas tanpa batas di era Web3.';
+    ctaText = 'Mulai Investasi';
+  } else if (p.includes('box') || p.includes('kotak') || p.includes('paket') || p.includes('unboxing') || p.includes('produk') || p.includes('packaging') || p.includes('gift') || p.includes('kemasan')) {
+    modelType = 'box';
+    lightingPreset = 'clean';
+    motionType = 'spring-pop';
+    motionSpeed = 1.0;
+    color = '#3b82f6';
+    metalness = 0.6;
+    roughness = 0.3;
+    audioPreset = 'ambient-clean';
+    badge = 'PRODUCT LAUNCH';
+    headline = 'Eksklusif *Unboxing Paket*';
+    subtext = 'Kualitas premium dengan desain ergonomis untuk kenyamanan maksimal.';
+    ctaText = 'Beli Sekarang';
+  } else if (p.includes('cyber') || p.includes('torus') || p.includes('geometris') || p.includes('quantum') || p.includes('futuristik') || hasWord(/\bai\b/) || p.includes('robot') || p.includes('core') || p.includes('neural')) {
+    modelType = 'geometric';
+    lightingPreset = 'cyber';
+    motionType = 'orbit';
+    motionSpeed = 1.2;
+    color = '#a855f7';
+    metalness = 0.9;
+    roughness = 0.1;
+    audioPreset = 'cinematic-epic';
+    badge = 'NEURAL ENGINE';
+    headline = 'Teknologi Kuantum *Generasi Baru*';
+    subtext = 'Kekuatan komputasi terintegrasi untuk akselerasi masa depan.';
+    ctaText = 'Eksplorasi Teknologi';
+  }
+
+  // Detect color mentions
+  if (p.includes('merah') || p.includes('red')) color = '#ef4444';
+  if (p.includes('biru') || p.includes('blue')) color = '#3b82f6';
+  if (p.includes('hijau') || p.includes('green')) color = '#10b981';
+  if (p.includes('kuning') || p.includes('yellow') || p.includes('emas') || p.includes('gold')) color = '#f59e0b';
+  if (p.includes('ungu') || p.includes('purple')) color = '#a855f7';
+  if (p.includes('cyan') || p.includes('tosca')) color = '#06b6d4';
+  if (p.includes('putih') || p.includes('white')) color = '#f8fafc';
+
+  // Extract explicit quote as headline
+  const quoteMatch = promptText.match(/["']([^"']+)["']/);
+  if (quoteMatch && quoteMatch[1]) {
+    headline = quoteMatch[1].includes('*') ? quoteMatch[1] : `${quoteMatch[1]}`;
+  }
+
+  return {
+    modelType,
+    motionType,
+    motionSpeed,
+    lightingPreset,
+    material: { color, metalness, roughness, wireframe: false },
+    textOverlay: { badge, headline, subtext, ctaText },
+    durationSec: 5,
+    aspectRatio: 'portrait',
+    audioPreset,
+  };
+}
+
+app.post('/api/generate-3d-prompt', async (req, res) => {
+  const { prompt: userPrompt, apiBase, apiKey, model } = req.body;
+  if (!userPrompt || !userPrompt.trim()) {
+    return res.status(400).json({ error: 'Prompt is required' });
+  }
+
+  const effectiveKey = apiKey || process.env.OPENAI_API_KEY || process.env.ROUTER_API_KEY || API_KEY;
+  const effectiveBase = apiBase || process.env.OPENAI_API_BASE || process.env.AI_BASE_URL;
+
+  if (effectiveBase && effectiveBase.startsWith('http')) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const systemPrompt = `Anda adalah 3D Motion Director kelas dunia. Berdasarkan prompt: "${userPrompt}", rancang konfigurasi video scene 3D yang sangat memukau dan sinematik.
+Model pilihan:
+- "smartphone" (hp, gadget, aplikasi, fintech)
+- "coin" (koin emas, crypto, keuangan, investasi, token)
+- "box" (unboxing paket, packaging, produk fisik, e-commerce)
+- "geometric" (AI, quantum, cyber, abstrak, teknologi futuristik)
+
+Keluarkan HANYA JSON murni tanpa markdown:
+{
+  "modelType": "smartphone",
+  "motionType": "spin",
+  "motionSpeed": 1.0,
+  "lightingPreset": "cyber",
+  "material": {
+    "color": "#06b6d4",
+    "metalness": 0.85,
+    "roughness": 0.2
+  },
+  "textOverlay": {
+    "badge": "BADGE KATEGORI",
+    "headline": "Headline dengan *Highlight*",
+    "subtext": "Satu kalimat penjelas tajam.",
+    "ctaText": "Tombol Aksi"
+  },
+  "durationSec": 5,
+  "aspectRatio": "portrait",
+  "audioPreset": "tech-bright"
+}`;
+
+      const fetchRes = await fetch(`${effectiveBase.replace(/\/+$/, '')}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${effectiveKey}`
+        },
+        body: JSON.stringify({
+          model: model || "gpt-4o-mini",
+          messages: [{ role: "user", content: systemPrompt }],
+          temperature: 0.7
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (fetchRes.ok) {
+        const aiData = await fetchRes.json();
+        let text = aiData.choices?.[0]?.message?.content || "";
+        text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+        const jsonStart = text.indexOf('{');
+        const jsonEnd = text.lastIndexOf('}');
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+          text = text.slice(jsonStart, jsonEnd + 1);
+        }
+        const parsed = JSON.parse(text);
+        if (parsed.modelType && parsed.textOverlay) {
+          return res.json({ success: true, config: parsed, source: 'ai' });
+        }
+      }
+    } catch (e) {
+      console.warn("[3D AI Prompt] Fallback to dynamic director:", e.message);
+    }
+  }
+
+  const dynamicConfig = generateDynamic3DConfig(userPrompt);
+  res.json({ success: true, config: dynamicConfig, source: 'dynamic_director' });
+});
+
+// ============================================================================
 // OFFICIAL REMOTION 3D RENDER ENGINE (WebGL Headless + Procedural Audio Sync)
 // ============================================================================
 app.post('/api/render-3d-video', async (req, res) => {

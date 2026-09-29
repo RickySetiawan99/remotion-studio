@@ -667,6 +667,135 @@
     }
   };
 
+  // ==========================================================================
+  // AI PROMPT INTEGRATION & DYNAMIC CONFIG APPLIER
+  // ==========================================================================
+  window.apply3DConfig = function (cfg) {
+    if (!cfg) return;
+
+    if (cfg.modelType) {
+      window.selectModelPreset(cfg.modelType);
+    }
+
+    if (cfg.motionType) {
+      window.selectMotion(cfg.motionType);
+    }
+
+    if (cfg.motionSpeed) {
+      state.motionSpeed = parseFloat(cfg.motionSpeed);
+      const slider = document.getElementById('motionSpeedSlider');
+      const val = document.getElementById('speedVal');
+      if (slider) slider.value = cfg.motionSpeed;
+      if (val) val.textContent = `${cfg.motionSpeed}x`;
+    }
+
+    if (cfg.lightingPreset) {
+      window.selectLighting(cfg.lightingPreset);
+    }
+
+    if (cfg.material) {
+      if (cfg.material.color) {
+        state.material.color = cfg.material.color;
+        const colorInput = document.getElementById('meshColorInput');
+        if (colorInput) colorInput.value = cfg.material.color;
+      }
+      if (cfg.material.metalness != null) {
+        state.material.metalness = parseFloat(cfg.material.metalness);
+        const mSlider = document.getElementById('metalnessSlider');
+        const mVal = document.getElementById('metalnessVal');
+        if (mSlider) mSlider.value = cfg.material.metalness;
+        if (mVal) mVal.textContent = parseFloat(cfg.material.metalness).toFixed(2);
+      }
+      if (cfg.material.roughness != null) {
+        state.material.roughness = parseFloat(cfg.material.roughness);
+        const rSlider = document.getElementById('roughnessSlider');
+        const rVal = document.getElementById('roughnessVal');
+        if (rSlider) rSlider.value = cfg.material.roughness;
+        if (rVal) rVal.textContent = parseFloat(cfg.material.roughness).toFixed(2);
+      }
+      loadModelMesh(state.modelType);
+    }
+
+    if (cfg.textOverlay) {
+      const bInput = document.getElementById('textBadgeInput');
+      const hInput = document.getElementById('textHeadlineInput');
+      const sInput = document.getElementById('textSubtextInput');
+      const cInput = document.getElementById('textCtaInput');
+
+      if (bInput && cfg.textOverlay.badge) bInput.value = cfg.textOverlay.badge;
+      if (hInput && cfg.textOverlay.headline) hInput.value = cfg.textOverlay.headline;
+      if (sInput && cfg.textOverlay.subtext) sInput.value = cfg.textOverlay.subtext;
+      if (cInput && cfg.textOverlay.ctaText) cInput.value = cfg.textOverlay.ctaText;
+
+      window.updateOverlayText();
+    }
+
+    if (cfg.aspectRatio) {
+      window.selectAspectRatio(cfg.aspectRatio);
+    }
+
+    if (cfg.durationSec) {
+      window.selectDuration(cfg.durationSec);
+    }
+  };
+
+  window.setQuickPrompt = function (text) {
+    const input = document.getElementById('ai3dPromptInput');
+    if (input) {
+      input.value = text;
+      input.focus();
+    }
+  };
+
+  window.generate3dFromPrompt = async function () {
+    const input = document.getElementById('ai3dPromptInput');
+    const btn = document.getElementById('btnGenerate3dPrompt');
+    const btnText = document.getElementById('btnGenerate3dText');
+    const prompt = input?.value?.trim();
+
+    if (!prompt) {
+      alert('Silakan ketik deskripsi atau ide video 3D yang ingin dibuat.');
+      input?.focus();
+      return;
+    }
+
+    if (btn) btn.disabled = true;
+    if (btnText) btnText.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> AI Merancang 3D...';
+
+    try {
+      const apiBase = localStorage.getItem('mc_api_base') || '';
+      const apiKey = localStorage.getItem('mc_api_key') || '';
+      const model = localStorage.getItem('mc_api_model') || '';
+
+      const res = await fetch('/api/generate-3d-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, apiBase, apiKey, model }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Gagal merancang dari prompt');
+      }
+
+      const data = await res.json();
+      if (data.success && data.config) {
+        window.apply3DConfig(data.config);
+
+        if (btnText) {
+          btnText.innerHTML = '<i class="fa-solid fa-check text-emerald-400 mr-1"></i> Komposisi 3D Terpasang!';
+          setTimeout(() => {
+            btnText.innerHTML = '✨ Rancang dengan Prompt AI';
+          }, 2500);
+        }
+      }
+    } catch (e) {
+      alert(`Error: ${e.message}`);
+      if (btnText) btnText.innerHTML = '✨ Rancang dengan Prompt AI';
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  };
+
   window.closeRenderModal = function () {
     const modal = document.getElementById('render3DModal');
     if (modal) modal.classList.add('hidden');

@@ -86,7 +86,44 @@
     <!-- LEFT PANEL: 3D CONTROLS (WORKBENCH) -->
     <aside class="w-full md:w-[420px] lg:w-[440px] border-b md:border-b-0 md:border-r border-zinc-800/80 bg-[#0d0f14] p-4 flex flex-col space-y-4 overflow-y-auto custom-scrollbar shrink-0">
       
-      <!-- SUB-TABS -->
+      <!-- AI 3D DIRECTOR PROMPT CARD -->
+      <div class="p-3.5 rounded-xl bg-gradient-to-b from-amber-500/10 via-zinc-900 to-zinc-900/90 border border-amber-500/30 shadow-lg relative overflow-hidden group">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> AI 3D Director Prompt
+          </label>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-semibold mono">Instant 3D</span>
+        </div>
+        <p class="text-[11px] text-zinc-400 mb-2 leading-relaxed">
+          Ketik ide video Anda, AI akan otomatis memilih model 3D, efek gerak, pencahayaan, material, dan teks overlay!
+        </p>
+        <div class="relative mb-2">
+          <textarea id="ai3dPromptInput" rows="2" class="w-full text-xs bg-zinc-950/90 border border-zinc-700/80 rounded-lg p-2.5 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-400/80 transition resize-none custom-scrollbar" placeholder="Contoh: Buatkan video promosi iPhone 16 Pro warna cyan neon berputar pelan dengan headline 'Next Gen Flagship'..."></textarea>
+        </div>
+        <div class="flex items-center gap-2 mb-2">
+          <button id="btnGenerate3dPrompt" onclick="generate3dFromPrompt()" class="flex-1 py-2 px-3 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 transition cursor-pointer">
+            <i class="fa-solid fa-bolt text-[11px]"></i>
+            <span id="btnGenerate3dText">✨ Rancang dengan Prompt AI</span>
+          </button>
+        </div>
+        <!-- Quick Preset Prompt Chips -->
+        <div class="flex flex-wrap gap-1.5 pt-1 border-t border-zinc-800/80">
+          <button type="button" onclick="setQuickPrompt('Promosi smartphone flagship warna cyan neon berputar cepat dengan headline \'Next-Gen Flagship\'')" class="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50 transition cursor-pointer flex items-center gap-1">
+            📱 <span>Smartphone Cyan</span>
+          </button>
+          <button type="button" onclick="setQuickPrompt('Koin emas crypto terbang mengambang dengan lighting luxury gold dan headline \'Aset Digital Masa Depan\'')" class="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50 transition cursor-pointer flex items-center gap-1">
+            🪙 <span>Crypto Gold</span>
+          </button>
+          <button type="button" onclick="setQuickPrompt('Unboxing paket produk fisik tech box biru chamfered dengan headline \'Paket Eksklusif Tiba\'')" class="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50 transition cursor-pointer flex items-center gap-1">
+            📦 <span>Tech Box</span>
+          </button>
+          <button type="button" onclick="setQuickPrompt('Animasi torus kuantum futuristik warna ungu neon berputar orbit dengan headline \'Teknologi AI Kuantum\'')" class="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50 transition cursor-pointer flex items-center gap-1">
+            🔮 <span>Cyber Quantum</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SUB-TABS (MANUAL CONTROLS) -->
       <div class="h-9 p-0.5 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center">
         <button id="tab3dBtnModel" onclick="switch3dTab('model')" class="flex-1 h-8 px-2 rounded-md text-xs font-semibold text-zinc-100 bg-zinc-800 border border-zinc-700/60 shadow-xs flex items-center justify-center gap-1.5 transition cursor-pointer">
           <i class="fa-solid fa-cube text-[10px] text-amber-400"></i> Model
