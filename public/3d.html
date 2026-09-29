@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MotionCraft 3D Studio — Programmatic 3D Video Engine</title>
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Google Fonts: Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Three.js & Controls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #07090e;
+      color: #f1f5f9;
+    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 999px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+    .glow-amber { box-shadow: 0 0 25px rgba(245, 158, 11, 0.25); }
+    .glow-cyan { box-shadow: 0 0 25px rgba(6, 182, 212, 0.25); }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-[#07090e] text-slate-100">
+
+  <!-- ======================================================== -->
+  <!-- TOP HEADER & DUAL-STUDIO NAVIGATION SWITCHER             -->
+  <!-- ======================================================== -->
+  <header class="h-14 border-b border-zinc-800/80 bg-[#0d0f14]/90 backdrop-blur-md px-4 flex items-center justify-between z-30 shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 to-cyan-500 p-0.5 shadow-md shadow-amber-500/20 flex items-center justify-center">
+        <i class="fa-solid fa-cube text-zinc-950 text-sm"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-sm tracking-tight text-white">MotionCraft</span>
+          <span class="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-sm bg-gradient-to-r from-amber-500/20 to-cyan-500/20 text-amber-300 border border-amber-500/40">3D Studio</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DUAL-STUDIO SEGMENTED PILL SWITCHER -->
+    <div class="flex items-center bg-zinc-900 border border-zinc-800 p-1 rounded-xl shadow-inner">
+      <a href="/" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-film text-[11px]"></i>
+        <span>2D Video Studio</span>
+      </a>
+      <a href="/3d" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/50 shadow-xs flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-cube text-[11px] text-amber-400"></i>
+        <span>3D Animation Studio</span>
+      </a>
+    </div>
+
+    <!-- RIGHT BADGES -->
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-1.5 text-xs text-zinc-400 px-2.5 py-1 rounded-md bg-zinc-900/80 border border-zinc-800">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="mono text-[11px]">Remotion Three.js v4</span>
+      </div>
+      <button onclick="render3DVideo()" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition cursor-pointer">
+        <i class="fa-solid fa-wand-magic-sparkles text-[11px]"></i>
+        <span>Render 3D MP4</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MAIN WORKSPACE (LEFT CONTROLS + RIGHT 3D VIEWPORT)      -->
+  <!-- ======================================================== -->
+  <div class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden relative">
+    
+    <!-- LEFT PANEL: 3D CONTROLS (WORKBENCH) -->
+    <aside class="w-full md:w-[420px] lg:w-[440px] border-b md:border-b-0 md:border-r border-zinc-800/80 bg-[#0d0f14] p-4 flex flex-col space-y-4 overflow-y-auto custom-scrollbar shrink-0">
+      
+      <!-- SUB-TABS -->
+      <div class="h-9 p-0.5 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center">
+        <button id="tab3dBtnModel" onclick="switch3dTab('model')" class="flex-1 h-8 px-2 rounded-md text-xs font-semibold text-zinc-100 bg-zinc-800 border border-zinc-700/60 shadow-xs flex items-center justify-center gap-1.5 transition cursor-pointer">
+          <i class="fa-solid fa-cube text-[10px] text-amber-400"></i> Model
+        </button>
+        <button id="tab3dBtnMotion" onclick="switch3dTab('motion')" class="flex-1 h-8 px-2 rounded-md text-xs font-semibold text-zinc-400 hover:text-zinc-200 flex items-center justify-center gap-1.5 transition cursor-pointer">
+          <i class="fa-solid fa-arrows-spin text-[10px]"></i> Motion
+        </button>
+        <button id="tab3dBtnLight" onclick="switch3dTab('light')" class="flex-1 h-8 px-2 rounded-md text-xs font-semibold text-zinc-400 hover:text-zinc-200 flex items-center justify-center gap-1.5 transition cursor-pointer">
+          <i class="fa-solid fa-lightbulb text-[10px]"></i> Lighting
+        </button>
+        <button id="tab3dBtnText" onclick="switch3dTab('text')" class="flex-1 h-8 px-2 rounded-md text-xs font-semibold text-zinc-400 hover:text-zinc-200 flex items-center justify-center gap-1.5 transition cursor-pointer">
+          <i class="fa-solid fa-font text-[10px]"></i> Overlay
+        </button>
+      </div>
+
+      <!-- TAB 1: MODEL & PRESETS -->
+      <div id="tabContentModel" class="space-y-4">
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-shapes text-amber-400"></i> Pilih Preset Objek 3D
+          </label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div id="mesh-smartphone" onclick="selectModelPreset('smartphone')" class="p-3 rounded-xl border border-amber-500/80 bg-zinc-800/80 text-white cursor-pointer transition flex flex-col gap-1.5 shadow-sm">
+              <div class="flex items-center justify-between">
+                <i class="fa-solid fa-mobile-screen text-amber-400 text-lg"></i>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Mockup</span>
+              </div>
+              <div class="text-xs font-bold">Smartphone</div>
+              <div class="text-[10px] text-zinc-400">Bezel logam & screen glossy</div>
+            </div>
+
+            <div id="mesh-coin" onclick="selectModelPreset('coin')" class="p-3 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:border-zinc-700 text-zinc-300 cursor-pointer transition flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <i class="fa-solid fa-coins text-yellow-400 text-lg"></i>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300">Token</span>
+              </div>
+              <div class="text-xs font-bold">Golden Coin</div>
+              <div class="text-[10px] text-zinc-400">Silinder relief metallic PBR</div>
+            </div>
+
+            <div id="mesh-box" onclick="selectModelPreset('box')" class="p-3 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:border-zinc-700 text-zinc-300 cursor-pointer transition flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <i class="fa-solid fa-box text-blue-400 text-lg"></i>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">Product</span>
+              </div>
+              <div class="text-xs font-bold">Product Box</div>
+              <div class="text-[10px] text-zinc-400">Kubus etalase chamfer edge</div>
+            </div>
+
+            <div id="mesh-geometric" onclick="selectModelPreset('geometric')" class="p-3 rounded-xl border border-zinc-800 bg-zinc-900/60 hover:border-zinc-700 text-zinc-300 cursor-pointer transition flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <i class="fa-solid fa-atom text-purple-400 text-lg"></i>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">Cyber</span>
+              </div>
+              <div class="text-xs font-bold">Cyber Torus</div>
+              <div class="text-[10px] text-zinc-400">TorusKnot dual-axis spin</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CUSTOM GLB UPLOAD -->
+        <div class="pt-2 border-t border-zinc-800/80">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-cloud-arrow-up text-cyan-400"></i> Atau Upload File 3D (.GLB / .GLTF)
+          </label>
+          <div class="p-4 border-2 border-dashed border-zinc-700 hover:border-cyan-500/70 rounded-xl bg-zinc-900/40 text-center transition cursor-pointer relative group">
+            <input type="file" id="glbFileInput" accept=".glb,.gltf" onchange="handleGlbUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+            <i class="fa-solid fa-cube text-2xl text-zinc-500 group-hover:text-cyan-400 transition mb-2"></i>
+            <div class="text-xs font-bold text-zinc-300 group-hover:text-white">Drag & drop atau klik file 3D</div>
+            <div class="text-[10px] text-zinc-500 mt-1">Maksimal 50MB (.glb / .gltf standar)</div>
+          </div>
+          <div id="uploadStatusText" class="text-[11px] text-cyan-400 font-semibold mt-2 hidden"></div>
+        </div>
+      </div>
+
+      <!-- TAB 2: MOTION & CAMERA -->
+      <div id="tabContentMotion" class="space-y-4 hidden">
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-play text-amber-400"></i> Mode Gerak Animasi
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="motion-spin" onclick="selectMotion('spin')" class="p-2.5 rounded-lg border border-amber-500/80 bg-zinc-800 text-white font-bold text-xs flex items-center gap-2 cursor-pointer transition">
+              <i class="fa-solid fa-arrows-spin text-amber-400"></i> 360 Continuous Spin
+            </button>
+            <button id="motion-float" onclick="selectMotion('float')" class="p-2.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs flex items-center gap-2 cursor-pointer transition">
+              <i class="fa-solid fa-water text-cyan-400"></i> Gentle Levitation
+            </button>
+            <button id="motion-orbit" onclick="selectMotion('orbit')" class="p-2.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs flex items-center gap-2 cursor-pointer transition">
+              <i class="fa-solid fa-circle-notch text-purple-400"></i> Dynamic Orbit
+            </button>
+            <button id="motion-spring-pop" onclick="selectMotion('spring-pop')" class="p-2.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs flex items-center gap-2 cursor-pointer transition">
+              <i class="fa-solid fa-bolt text-yellow-400"></i> Spring Pop & Pulse
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1.5">
+            <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Kecepatan Rotasi</label>
+            <span id="speedValueLabel" class="mono text-xs text-amber-400 font-bold">1.0x</span>
+          </div>
+          <input type="range" id="speedSlider" min="0.3" max="2.5" step="0.1" value="1.0" oninput="updateMotionSpeed(this.value)" class="w-full accent-amber-500 cursor-pointer">
+        </div>
+      </div>
+
+      <!-- TAB 3: LIGHTING & MATERIAL -->
+      <div id="tabContentLight" class="space-y-4 hidden">
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-sun text-amber-400"></i> Studio Lighting Preset
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="light-cyber" onclick="selectLighting('cyber')" class="p-2.5 rounded-lg border border-amber-500/80 bg-zinc-800 text-white font-bold text-xs flex items-center gap-2 cursor-pointer transition">
+              <i class="fa-solid fa-microchip text-cyan-400"></i> Neon Cyber
+            </button>
+            <button id="light-luxury" onclick="selectLighting('luxury')" class="p-2.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs flex items-center gap-2 cursor-pointer transition">
+              <i class="fa-solid fa-gem text-amber-400"></i> Warm Luxury
+            </button>
+            <button id="light-obsidian" onclick="selectLighting('obsidian')" class="p-2.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs flex items-center gap-2 cursor-pointer transition">
+              <i class="fa-solid fa-moon text-indigo-400"></i> Obsidian Spot
+            </button>
+            <button id="light-clean" onclick="selectLighting('clean')" class="p-2.5 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 font-bold text-xs flex items-center gap-2 cursor-pointer transition">
+              <i class="fa-solid fa-sun text-slate-300"></i> Clean Studio
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-zinc-800/80 space-y-3">
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Warna Aksen Objek</label>
+              <input type="color" id="meshColorPicker" value="#06b6d4" onchange="updateMeshColor(this.value)" class="w-7 h-7 rounded border border-zinc-700 bg-transparent cursor-pointer">
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-[11px] font-bold text-zinc-400">Metalness (Kilau Logam)</label>
+              <span id="metalnessVal" class="mono text-xs text-zinc-300 font-bold">0.85</span>
+            </div>
+            <input type="range" id="metalnessSlider" min="0" max="1" step="0.05" value="0.85" oninput="updateMaterialProps()" class="w-full accent-cyan-500 cursor-pointer">
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-[11px] font-bold text-zinc-400">Roughness (Kekasaran)</label>
+              <span id="roughnessVal" class="mono text-xs text-zinc-300 font-bold">0.20</span>
+            </div>
+            <input type="range" id="roughnessSlider" min="0" max="1" step="0.05" value="0.20" oninput="updateMaterialProps()" class="w-full accent-cyan-500 cursor-pointer">
+          </div>
+
+          <div class="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="wireframeCheck" onchange="updateMaterialProps()" class="rounded border-zinc-700 text-cyan-500 focus:ring-0 cursor-pointer">
+            <label for="wireframeCheck" class="text-xs font-semibold text-zinc-300 cursor-pointer">Tampilkan Mode Wireframe</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: TEXT OVERLAY & VIDEO SPECS -->
+      <div id="tabContentText" class="space-y-4 hidden">
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5 block">Badge / Tagline Atas</label>
+          <input type="text" id="textBadgeInput" value="3D SHOWCASE" oninput="updateOverlayText()" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-bold text-white focus:border-amber-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5 block">Headline Utama (Gunakan *kata* untuk highlight)</label>
+          <input type="text" id="textHeadlineInput" value="Visualisasi 3D *Masa Depan*" oninput="updateOverlayText()" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-bold text-white focus:border-amber-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5 block">Subtext Deskripsi</label>
+          <textarea id="textSubtextInput" rows="2" oninput="updateOverlayText()" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 focus:border-amber-500 focus:outline-none">Engine video motion 3D berbasis WebGL, Three.js & Remotion.</textarea>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5 block">Call to Action (CTA Button)</label>
+          <input type="text" id="textCtaInput" value="Explore 3D Studio" oninput="updateOverlayText()" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-bold text-white focus:border-amber-500 focus:outline-none">
+        </div>
+
+        <div class="pt-2 border-t border-zinc-800/80">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-2 block">Aspect Ratio & Durasi</label>
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <button id="ratio-portrait" onclick="selectAspectRatio('portrait')" class="py-2 px-1 text-center rounded-lg border border-amber-500/80 bg-zinc-800 text-white font-bold text-xs cursor-pointer">
+              9:16 Reels
+            </button>
+            <button id="ratio-landscape" onclick="selectAspectRatio('landscape')" class="py-2 px-1 text-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 font-bold text-xs cursor-pointer">
+              16:9 Video
+            </button>
+            <button id="ratio-square" onclick="selectAspectRatio('square')" class="py-2 px-1 text-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 font-bold text-xs cursor-pointer">
+              1:1 Feed
+            </button>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <button id="dur-5" onclick="selectDuration(5)" class="py-2 px-1 text-center rounded-lg border border-amber-500/80 bg-zinc-800 text-white font-bold text-xs cursor-pointer">
+              5 Detik
+            </button>
+            <button id="dur-10" onclick="selectDuration(10)" class="py-2 px-1 text-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 font-bold text-xs cursor-pointer">
+              10 Detik
+            </button>
+            <button id="dur-15" onclick="selectDuration(15)" class="py-2 px-1 text-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 font-bold text-xs cursor-pointer">
+              15 Detik
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT PANEL: INTERACTIVE THREE.JS VIEWPORT -->
+    <main class="flex-1 flex flex-col min-h-0 bg-[#06080e] relative overflow-hidden">
+      
+      <!-- VIEWPORT TOP BAR -->
+      <div class="h-10 px-4 border-b border-zinc-800/80 bg-zinc-950/40 backdrop-blur-xs flex items-center justify-between z-20 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+          <span id="activeModelName" class="text-xs font-bold text-zinc-200">Smartphone Mockup 3D</span>
+          <span class="text-[10px] text-zinc-500 mono">(Drag to orbit, scroll to zoom)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span id="activeRatioBadge" class="text-[10px] mono font-bold px-2 py-0.5 rounded bg-zinc-800 text-zinc-300">1080 × 1920 (9:16)</span>
+          <span class="text-[10px] mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">60 FPS</span>
+        </div>
+      </div>
+
+      <!-- THREE.JS CANVAS CONTAINER -->
+      <div class="flex-1 relative flex items-center justify-center p-4 min-h-0 overflow-hidden">
+        
+        <!-- CANVAS FRAME WRAPPER (Aspect Ratio Responsive) -->
+        <div id="canvasViewportWrapper" class="relative rounded-2xl overflow-hidden shadow-2xl border border-zinc-800/80 transition-all duration-300" style="aspect-ratio: 9/16; max-height: 82vh; width: auto; max-width: 100%;">
+          
+          <!-- THREE.JS WEBGL CANVAS -->
+          <div id="threeCanvasMount" class="w-full h-full absolute inset-0 cursor-grab active:cursor-grabbing"></div>
+
+          <!-- HTML OVERLAY PREVIEW LAYER (Live Synced) -->
+          <div id="overlayPreviewLayer" class="absolute inset-0 pointer-events-none p-8 flex flex-col justify-between z-10 transition-opacity">
+            <div class="flex justify-center">
+              <div id="previewBadge" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-950/70 border border-cyan-500/50 text-[11px] font-bold text-white uppercase tracking-wider backdrop-blur-sm shadow-md">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span>3D SHOWCASE</span>
+              </div>
+            </div>
+
+            <div class="text-center space-y-2">
+              <h1 id="previewHeadline" class="text-2xl sm:text-3xl font-black text-white leading-tight drop-shadow-md">
+                Visualisasi 3D <span class="bg-cyan-500 px-2 py-0.5 rounded-md text-white shadow-lg shadow-cyan-500/40">Masa Depan</span>
+              </h1>
+              <p id="previewSubtext" class="text-xs text-zinc-300 max-w-sm mx-auto line-clamp-2">
+                Engine video motion 3D berbasis WebGL, Three.js & Remotion.
+              </p>
+              <div id="previewCtaWrapper" class="pt-2">
+                <span id="previewCta" class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs shadow-md shadow-cyan-500/30">
+                  <span>Explore 3D Studio</span>
+                  <span>→</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- BOTTOM TIMELINE & CONTROL BAR -->
+      <div class="h-14 border-t border-zinc-800/80 bg-[#0d0f14] px-4 flex items-center justify-between gap-4 z-20 shrink-0">
+        <div class="flex items-center gap-2">
+          <button id="playPauseBtn" onclick="togglePlayback()" class="w-9 h-9 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white flex items-center justify-center transition cursor-pointer">
+            <i id="playIcon" class="fa-solid fa-pause text-xs"></i>
+          </button>
+          <button onclick="resetCamera()" class="w-9 h-9 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white flex items-center justify-center transition cursor-pointer" title="Reset Sudut Kamera">
+            <i class="fa-solid fa-arrows-to-dot text-xs"></i>
+          </button>
+        </div>
+
+        <!-- TIMELINE SCRUBBER -->
+        <div class="flex-1 flex items-center gap-3">
+          <span id="timelineCurrentTime" class="mono text-xs font-semibold text-zinc-400">00:00.00</span>
+          <input type="range" id="timelineSlider" min="0" max="150" value="0" oninput="scrubTimeline(this.value)" class="flex-1 accent-amber-500 cursor-pointer">
+          <span id="timelineTotalTime" class="mono text-xs font-semibold text-zinc-500">00:05.00</span>
+        </div>
+
+        <button onclick="render3DVideo()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-amber-500/25 transition cursor-pointer">
+          <i class="fa-solid fa-video text-xs"></i>
+          <span>RENDER 3D VIDEO</span>
+        </button>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- RENDER STATUS MODAL -->
+  <div id="render3DModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center">
+            <i class="fa-solid fa-cube text-sm"></i>
+          </div>
+          <h3 class="font-bold text-white text-sm">Rendering Remotion 3D Video</h3>
+        </div>
+        <button onclick="closeRenderModal()" class="text-zinc-500 hover:text-white text-sm cursor-pointer">✕</button>
+      </div>
+
+      <div id="render3DProgressContent" class="space-y-3 py-2">
+        <div class="flex justify-between text-xs">
+          <span id="render3DStatusText" class="text-zinc-300 font-semibold">Mengompilasi WebGL frame...</span>
+          <span id="render3DPct" class="mono font-bold text-amber-400">0%</span>
+        </div>
+        <div class="w-full h-2 rounded-full bg-zinc-800 overflow-hidden">
+          <div id="render3DProgressBar" class="h-full bg-gradient-to-r from-amber-500 to-cyan-500 w-0 transition-all duration-300"></div>
+        </div>
+        <p class="text-[11px] text-zinc-500">Video 3D beresolusi penuh sedang diproduksi oleh Remotion headless engine dengan sinkronisasi musik latar & SFX.</p>
+      </div>
+
+      <div id="render3DSuccessContent" class="space-y-4 py-2 hidden">
+        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+          <span>Render video 3D selesai dengan sukses!</span>
+        </div>
+        <div class="flex gap-2">
+          <a id="download3DVideoBtn" href="#" download class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs text-center transition">
+            <i class="fa-solid fa-download mr-1.5"></i> Download Video (MP4)
+          </a>
+          <button onclick="closeRenderModal()" class="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs transition">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/3d-studio.js"></script>
+</body>
+</html>
